@@ -1,0 +1,54 @@
+/*  コメント */
+table,td, th   { 
+    font-family: "Meiryo UI" ; 
+    font-size: 14px; 
+    border: 1px #faa107 solid;  
+    border-collapse: collapse; 
+    padding: 3px; 
+    margin-left: 70px;
+}
+.summary {
+    border:none ;
+    background-color: #f4ffc9;
+    text-align: right;
+}
+h1{
+    text-align: center;
+    margin: 0 0 0.5em;
+    padding: 3px;
+    font-size: 20px ;
+    font-weight: bold;
+}
+h2{
+    margin: 0 0 0.5em;
+    padding: 3px;
+    border-top: 3px double #faa107;
+    border-bottom: 3px double #faa107;
+    font-size: 16px ;
+    font-weight: bold;
+}
+a { 
+    text-decoration: none; 
+}
+th { 
+    background-color :#faa107;
+}
+tr { 
+    background-color : #ffffff;
+}
+tr:nth-child(2n+1) { 
+    background-color : #edcebe;
+}
+tr:hover  { 
+    background-color : #f4ffc9;
+}
+td.red  { 
+    color : #ff0000 ; 
+    font-weight : bold ;
+}
+td.right{ 
+    text-align: right;
+}
+.flex {
+    display: flex;
+}
