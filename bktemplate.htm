@@ -1,0 +1,256 @@
+<html><head><title>Book Diary</title>
+    <!-- 23/12/14 -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link rel="stylesheet" href="bookdr.css">
+    <script src="https://kit.fontawesome.com/2eea21dfe2.js" crossorigin="anonymous"></script>
+    </head>
+    
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"]});
+        google.setOnLoadCallback(
+            function() {
+                var data = google.visualization.arrayToDataTable([
+        [       '', '冊数'],
+    %monthly_graph%
+                ]);
+        
+                var options = {
+                    title: '月別冊数',
+                    colors: ['#faa107'] ,
+                    chartArea:{left:100},
+                    hAxis: {title: '日'}
+                };
+        
+                var chart = new google.visualization.ColumnChart(document.getElementById('monthly_graph'));
+                chart.draw(data, options);
+            }
+        );
+    </script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"]});
+        google.setOnLoadCallback(
+            function() {
+                var data = google.visualization.arrayToDataTable([
+        [       '', '冊数'],
+    %year_graph%
+                ]);
+        
+                var options = {
+                    title: '年別冊数',
+                    colors: ['#faa107'] ,
+                    chartArea:{left:100},
+                    hAxis: {title: '日'}
+                };
+        
+                var chart = new google.visualization.ColumnChart(document.getElementById('year_graph'));
+                chart.draw(data, options);
+            }
+        );
+    </script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"]});
+        google.setOnLoadCallback(
+            function() {
+                var data = google.visualization.arrayToDataTable([
+        [       '', '冊数'],
+    %acc_graph%
+                ]);
+        
+                var options = {
+                    title: '年別冊数',
+                    colors: ['#faa107'] ,
+                    chartArea:{left:100},
+                    hAxis: {title: '日'},
+                    vAxis: {minValue:0}
+                };
+        
+                var chart = new google.visualization.ColumnChart(document.getElementById('acc_graph'));
+                chart.draw(data, options);
+            }
+        );
+    </script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"]});
+        google.setOnLoadCallback(
+            function() {
+                var data = google.visualization.arrayToDataTable([
+        [       '', '円'],
+    %year_price_graph%
+                ]);
+        
+                var options = {
+                    title: '年別平均価格',
+                    colors: ['#faa107'] ,
+                    chartArea:{left:100},
+                    hAxis: {title: '年'},
+                    vAxis: {minValue:0}
+                };
+        
+                var chart = new google.visualization.ColumnChart(document.getElementById('year_price_graph'));
+                chart.draw(data, options);
+            }
+        );
+    </script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"]});
+        google.setOnLoadCallback(
+            function() {
+                var data = google.visualization.arrayToDataTable([
+        [       '', '図書館率'],
+    %year_librate_graph%
+                ]);
+        
+                var options = {
+                    title: '年別図書館率',
+                    colors: ['#0724fa'] ,
+                    chartArea:{left:100},
+                    hAxis: {title: '年'},
+                    vAxis: {minValue:0}
+                };
+        
+                var chart = new google.visualization.LineChart(document.getElementById('year_librate_graph'));
+                chart.draw(data, options);
+            }
+        );
+    </script>
+    
+
+    <h1>Book Diary</h1>
+    <span style="font-size:12px;">Ver : %version%</span>
+    <span style="font-size:12px;">実行日時   : %today%</span>
+    <span style="font-size:12px;">最終データ : %lastdate%</span>
+    
+    <h2>サマリー</h2>
+    <table class="summary">
+        %summary%
+    </table>
+    <br>
+    <h2>月別グラフ</h2>
+    <div id="monthly_graph" style="width:1200px; height:400px;  margin-top:20px ; " ></div>
+    <br>
+    
+    <h2>月累積グラフ</h2>
+    %cur_month% 
+    <div id="acc_graph" style="width:1000px; height:400px;  margin-top:20px ;  " ></div>
+    
+    <h2>月別データ</h2>
+    <div class="flex">
+        <div>
+            月別データ
+            <table>
+            <tr>
+            <th>年月</th><th>冊数</th><th>ページ数</th><th>平均</th>
+            <th>価格</th><th>平均</th><th>図書館</th><th>率</th>
+            </tr>
+            %month_table%
+            </table>
+        </div>
+        <div>
+            累積データ
+            %cur_month% 
+            <table>
+                <tr>
+                <th>年</th><th>冊数</th><th>ページ数</th><th>平均</th>
+                <th>価格</th><th>平均</th><th>図書館</th><th>率</th>
+                </tr>
+                %accumulate%
+            </table>
+        </div>
+    </div>
+    <br>
+       
+    <h2>ページランキング</h2>
+    <div class="flex">
+        <div>
+            総合
+            <table>
+                <tr>
+                <th>順位</th><th>日付</th><th width="200">書名</th><th>ページ</th><th>図書館</th>
+                </tr>
+                %rank_page%
+            </table>
+        </div>
+        <div>
+            今年
+            <table>
+                <tr>
+                <th>順位</th><th>日付</th><th  width="200">書名</th><th>ページ</th><th>図書館</th>
+                </tr>
+                %rank_page_year%
+            </table>
+        </div>
+    </div>
+    <br>
+    
+    <h2>価格ランキング</h2>
+    <div class="flex">
+        <div>
+            総合
+            <table>
+                <tr>
+                <th>順位</th><th>日付</th><th width="200">書名</th><th>価格</th><th>図書館</th>
+                </tr>
+                %rank_price%
+            </table>
+        </div>
+        <div>
+            今年
+            <table>
+                <tr>
+                <th>順位</th><th>日付</th><th width="200">書名</th><th>価格</th><th>図書館</th>
+                </tr>
+                %rank_price_year%
+            </table>
+        </div>
+    </div>
+    <br>
+    <h2>月別ページランキング</h2>
+    <div class="flex">
+        <div>
+            <table>
+                <tr>
+                <th>順位</th><th>年月</th><th>ページ数</th>
+                </tr>
+                %rank_page_month1%
+            </table>
+        </div>
+        <div>
+            <table>
+                <tr>
+                <th>順位</th><th>年月</th><th>ページ数</th>
+                </tr>
+                %rank_page_month2%
+            </table>
+        </div>
+    </div>
+    <br>
+    <h2>年別グラフ</h2>
+    <div id="year_graph" style="width:1000px; height:400px;  margin-top:20px ;  " ></div>
+    
+    <h2>年別データ</h2>
+    <table>
+        <tr>
+        <th>年</th><th>冊数</th><th>ページ数</th><th>平均</th>
+        <th>価格</th><th>平均</th><th>図書館</th><th>率</th>
+        </tr>
+        %year_table%
+    </table>
+    <br>
+
+    <h2>年別価格グラフ</h2>
+    <div id="year_price_graph" style="width:1200px; height:400px;  margin-top:20px ; " ></div>
+    <br>
+    <h2>年別図書館率グラフ</h2>
+    <div id="year_librate_graph" style="width:1200px; height:400px;  margin-top:20px ; " ></div>
+    <br>
+
+    <h2>状況</h2>
+    <iframe src="https://pixe.la/v1/users/hama777/graphs/book?mode=simple" height="155" width="720" frameborder="0">
+    </iframe>
+    
+    
+    </body>
+    </html>
+    
