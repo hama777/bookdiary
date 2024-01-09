@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.08"   # 23/12/15
+version = "1.09"   # 24/01/09
 appdir = os.path.dirname(os.path.abspath(__file__))
 
 conn_temp = (
@@ -22,10 +22,10 @@ templatefile = appdir + "./bktemplate.htm"
 resultfile = appdir + "./bookdr.htm"
 conffile = appdir + "./bookdr.conf"
 dbfile = ""
-end_year = 2023
+end_year = 2024     # 集計する最終年
 start_year = 1990
 cur_month = 0       # 現在の月
-cur_year = 2023     # 今年
+#cur_year = 2023     # 今年
 accdata = {}        # 現在月までの累積データ   キー  年  値  リスト
 browser = "C:\Program Files\Google\Chrome\Application\chrome.exe"
 lastdate = ""
@@ -106,7 +106,7 @@ def rank_price():
 
 #   価格ランキング 今年
 def rank_price_year():
-    dfyy = df[df['date'].dt.year == cur_year]
+    dfyy = df[df['date'].dt.year == end_year]
     df_s = dfyy.sort_values(by=['price'],ascending=False)
     rank_price_output(df_s,20)
 
@@ -130,7 +130,7 @@ def rank_page():
 
 #   ページランキング 今年
 def rank_page_year():
-    dfyy = df[df['date'].dt.year == cur_year]
+    dfyy = df[df['date'].dt.year == end_year]
     df_s = dfyy.sort_values(by=['page'],ascending=False)
     rank_page_output(df_s,20)
 
@@ -313,7 +313,7 @@ def today(s):
 def summary():
     num_all = len(df)
     page_all = df['page'].sum()
-    dfyy = df[df['date'].dt.year == cur_year]
+    dfyy = df[df['date'].dt.year == end_year]
     num_year  = len(dfyy)
     page_year = dfyy['page'].sum()
     dfmm = dfyy[dfyy['date'].dt.month == cur_month]
