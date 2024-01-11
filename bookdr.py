@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.09"   # 24/01/09
+version = "1.10"   # 24/01/11
 appdir = os.path.dirname(os.path.abspath(__file__))
 
 conn_temp = (
@@ -25,7 +25,6 @@ dbfile = ""
 end_year = 2024     # 集計する最終年
 start_year = 1990
 cur_month = 0       # 現在の月
-#cur_year = 2023     # 今年
 accdata = {}        # 現在月までの累積データ   キー  年  値  リスト
 browser = "C:\Program Files\Google\Chrome\Application\chrome.exe"
 lastdate = ""
@@ -43,7 +42,6 @@ def main_proc() :
     read_config()
     read_database()
     accumulate()
-    #rank_page_month()
     parse_template()
     result = subprocess.run((browser, resultfile))
     ftp_upload()
@@ -136,7 +134,7 @@ def rank_page_year():
 
 #  月別ページランキング
 def rank_page_month(flg) :
-    # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示
+    # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
     page_list = []
     date_list = []
     for yy in range(1994,end_year+1) :
@@ -158,15 +156,20 @@ def rank_page_month(flg) :
         if flg == 1 :
             if i > 10 :
                 break
-        else :
+        elif flg == 2 :
             if i <= 10 :
-                continue 
+                continue
+            if i > 20 :
+                break
+        else :
+            if i <= 20 :
+                continue
+
         yy = int(row.date / 100)
         mm = int(row.date % 100)
         out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.page:5.0f}</td></tr>')
-        if i == 20 : 
+        if i == 30 : 
             break
-    
 
 def rank_page_output(target_df,n) :
     i = 0
@@ -180,7 +183,6 @@ def rank_page_output(target_df,n) :
                   f'<td align="right">{row.page:5.0f}</td><td align="center">{libstr}</td></tr>')
         if i == n : 
             return
-
 
 #   年別の現在月での累積データ
 def accumulate() :
@@ -255,8 +257,6 @@ def month_table() :
                     f"<td align='right'>{price_mean:5.1f}</td>"
                     f"<td align='right'>{lib:5.0f}</td><td align='right'>{lib/n*100:3.1f}</td>"
                     f"</tr>\n")
-
-
 
 def year_table() :
     global price_year_ave,librate_year_ave
@@ -412,6 +412,9 @@ def parse_template() :
         if "%rank_page_month2%" in line :
             rank_page_month(2)
             continue
+        if "%rank_page_month3%" in line :
+            rank_page_month(3)
+            continue
         if "%cur_month%" in line :
             out.write(f'{cur_month} 月現在')
             continue
@@ -445,7 +448,6 @@ def parse_template() :
 def ftp_upload() : 
     with FTP_TLS(host=ftp_host, user=ftp_user, passwd=ftp_pass) as ftp:
         ftp.storbinary('STOR {}'.format(ftp_url), open(resultfile, 'rb'))
-
 
 def curdate():
     pass
