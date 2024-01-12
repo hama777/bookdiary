@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.10"   # 24/01/11
+version = "1.11"   # 24/01/12
 appdir = os.path.dirname(os.path.abspath(__file__))
 
 conn_temp = (
@@ -126,10 +126,15 @@ def rank_page():
     df_s = df.sort_values(by=['page'],ascending=False)
     rank_page_output(df_s,20)
 
-#   ページランキング 今年
+#   ページランキング 365日
 def rank_page_year():
-    dfyy = df[df['date'].dt.year == end_year]
-    df_s = dfyy.sort_values(by=['page'],ascending=False)
+    #  1年前の同月(を含まない)以降からのランキング
+    target_mm = cur_month + 1 
+    if target_mm == 13 :
+        target_mm = 1 
+    target_yy = end_year -1 
+    target_df = df[df['date'] >= datetime.datetime(target_yy,target_mm,1)]
+    df_s = target_df.sort_values(by=['page'],ascending=False)
     rank_page_output(df_s,20)
 
 #  月別ページランキング
