@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.11"   # 24/01/12
+version = "1.12"   # 24/01/16
 appdir = os.path.dirname(os.path.abspath(__file__))
 
 conn_temp = (
@@ -102,10 +102,17 @@ def rank_price():
     df_s = df.sort_values(by=['price'],ascending=False)
     rank_price_output(df_s,20)
 
-#   価格ランキング 今年
+#   価格ランキング 365日
 def rank_price_year():
-    dfyy = df[df['date'].dt.year == end_year]
-    df_s = dfyy.sort_values(by=['price'],ascending=False)
+    #  1年前の同月(を含まない)以降からのランキング
+    target_mm = cur_month + 1 
+    if target_mm == 13 :
+        target_mm = 1 
+    target_yy = end_year -1 
+
+#    dfyy = df[df['date'].dt.year == end_year]
+    target_df = df[df['date'] >= datetime.datetime(target_yy,target_mm,1)]
+    df_s = target_df.sort_values(by=['price'],ascending=False)
     rank_price_output(df_s,20)
 
 def rank_price_output(target_df,n) :
