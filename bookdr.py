@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.12"   # 24/01/16
+version = "1.13"   # 24/01/22
 appdir = os.path.dirname(os.path.abspath(__file__))
 
 conn_temp = (
@@ -180,6 +180,45 @@ def rank_page_month(flg) :
         yy = int(row.date / 100)
         mm = int(row.date % 100)
         out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.page:5.0f}</td></tr>')
+        if i == 30 : 
+            break
+
+#  月別価格ランキング
+def rank_price_month(flg) :
+    # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
+    price_list = []
+    date_list = []
+    for yy in range(1994,end_year+1) :
+        dfyy = df[df['date'].dt.year == yy]
+        for mm in range(1,13) : 
+            if yy == end_year and mm > cur_month :
+                break
+            dfmm = dfyy[dfyy['date'].dt.month == mm]
+            p = dfmm['price'].sum()
+            price_list.append(p)
+            date_list.append(yy*100+mm)
+            
+    df_page_month = pd.DataFrame(list(zip(date_list,price_list))
+        , columns = ['date','price'])
+    df_s = df_page_month.sort_values(by=['price'],ascending=False)
+    i = 0
+    for _, row in df_s.iterrows():
+        i = i+1
+        if flg == 1 :
+            if i > 10 :
+                break
+        elif flg == 2 :
+            if i <= 10 :
+                continue
+            if i > 20 :
+                break
+        else :
+            if i <= 20 :
+                continue
+
+        yy = int(row.date / 100)
+        mm = int(row.date % 100)
+        out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.price:5.0f}</td></tr>')
         if i == 30 : 
             break
 
@@ -426,6 +465,15 @@ def parse_template() :
             continue
         if "%rank_page_month3%" in line :
             rank_page_month(3)
+            continue
+        if "%rank_price_month1%" in line :
+            rank_price_month(1)
+            continue
+        if "%rank_price_month2%" in line :
+            rank_price_month(2)
+            continue
+        if "%rank_price_month3%" in line :
+            rank_price_month(3)
             continue
         if "%cur_month%" in line :
             out.write(f'{cur_month} 月現在')
