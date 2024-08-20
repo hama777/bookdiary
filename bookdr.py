@@ -9,7 +9,9 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.13"   # 24/01/22
+version = "1.14"   # 24/08/20
+
+debug = 1
 appdir = os.path.dirname(os.path.abspath(__file__))
 
 conn_temp = (
@@ -43,6 +45,8 @@ def main_proc() :
     read_database()
     accumulate()
     parse_template()
+    if debug == 1 :
+        return
     result = subprocess.run((browser, resultfile))
     ftp_upload()
     post_pixela()
@@ -162,6 +166,7 @@ def rank_page_month(flg) :
     df_page_month = pd.DataFrame(list(zip(date_list,page_list))
         , columns = ['date','page'])
     df_s = df_page_month.sort_values(by=['page'],ascending=False)
+    print(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])
     i = 0
     for _, row in df_s.iterrows():
         i = i+1
