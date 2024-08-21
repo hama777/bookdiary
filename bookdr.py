@@ -9,9 +9,9 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.14"   # 24/08/20
+version = "1.15"   # 24/08/21
 
-debug = 1
+debug = 0
 appdir = os.path.dirname(os.path.abspath(__file__))
 
 conn_temp = (
@@ -44,6 +44,7 @@ def main_proc() :
     read_config()
     read_database()
     accumulate()
+    calc_rank_page_month()
     parse_template()
     if debug == 1 :
         return
@@ -148,9 +149,9 @@ def rank_page_year():
     df_s = target_df.sort_values(by=['page'],ascending=False)
     rank_page_output(df_s,20)
 
-#  月別ページランキング
-def rank_page_month(flg) :
-    # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
+#  月別ページランキングの計算
+def calc_rank_page_month() :
+    global df_page_month
     page_list = []
     date_list = []
     for yy in range(1994,end_year+1) :
@@ -165,10 +166,30 @@ def rank_page_month(flg) :
             
     df_page_month = pd.DataFrame(list(zip(date_list,page_list))
         , columns = ['date','page'])
-    df_s = df_page_month.sort_values(by=['page'],ascending=False)
-    print(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])
+    df_page_month = df_page_month.sort_values(by=['page'],ascending=False)
+
+
+#  月別ページランキングの表示
+def rank_page_month(flg) :
+    # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
+    # page_list = []
+    # date_list = []
+    # for yy in range(1994,end_year+1) :
+    #     dfyy = df[df['date'].dt.year == yy]
+    #     for mm in range(1,13) : 
+    #         if yy == end_year and mm > cur_month :
+    #             break
+    #         dfmm = dfyy[dfyy['date'].dt.month == mm]
+    #         p = dfmm['page'].sum()
+    #         page_list.append(p)
+    #         date_list.append(yy*100+mm)
+            
+    # df_page_month = pd.DataFrame(list(zip(date_list,page_list))
+    #     , columns = ['date','page'])
+    # df_s = df_page_month.sort_values(by=['page'],ascending=False)
+    # print(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])
     i = 0
-    for _, row in df_s.iterrows():
+    for _, row in df_page_month.iterrows():
         i = i+1
         if flg == 1 :
             if i > 10 :
