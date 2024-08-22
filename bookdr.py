@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.15"   # 24/08/21
+version = "1.16"   # 24/08/22
 
 debug = 0
 appdir = os.path.dirname(os.path.abspath(__file__))
@@ -168,26 +168,14 @@ def calc_rank_page_month() :
         , columns = ['date','page'])
     df_page_month = df_page_month.sort_values(by=['page'],ascending=False)
 
+# 今月のページ順位
+def  cur_month_page_rank() :
+    order = df_page_month['page'].rank(method='min',ascending=False).index[-1]  # 最終行(=今月)のindexを取得
+    count = len(df_page_month)
+    return order,count
 
 #  月別ページランキングの表示
 def rank_page_month(flg) :
-    # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
-    # page_list = []
-    # date_list = []
-    # for yy in range(1994,end_year+1) :
-    #     dfyy = df[df['date'].dt.year == yy]
-    #     for mm in range(1,13) : 
-    #         if yy == end_year and mm > cur_month :
-    #             break
-    #         dfmm = dfyy[dfyy['date'].dt.month == mm]
-    #         p = dfmm['page'].sum()
-    #         page_list.append(p)
-    #         date_list.append(yy*100+mm)
-            
-    # df_page_month = pd.DataFrame(list(zip(date_list,page_list))
-    #     , columns = ['date','page'])
-    # df_s = df_page_month.sort_values(by=['page'],ascending=False)
-    # print(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])
     i = 0
     for _, row in df_page_month.iterrows():
         i = i+1
@@ -405,6 +393,7 @@ def summary():
     days_all = (today - start_date).days
     span_blue = '<span style="color:#0763f7;">'
     span_end = '</span></td><td class="summary">'
+    order,count = cur_month_page_rank()
 
     out.write(f'<tr><td class="summary">{info_icon}</td>'
               f'<td class="summary">{span_blue}累積:{span_end}{num_all:>4} 冊</td>'
@@ -426,7 +415,8 @@ def summary():
               f'<td class="summary">{book_icon}</td>'
               f'<td class="summary">{span_blue}ページ:{span_end}{page_month:.0f} </td>'
               f'<td class="summary">{span_blue}月平均:{span_end}{page_month/days_month*30:.2f}</td>'
-              f'<td class="summary">{span_blue}日平均:{span_end}{page_month/days_month:.2f}</td></tr>')
+              f'<td class="summary">{span_blue}日平均:{span_end}{page_month/days_month:.2f} 順位:{order}/{count}</td></tr>')
+
     out.write('</tr>')
 
 def post_pixela() :
