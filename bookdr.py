@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.16"   # 24/08/22
+version = "1.17"   # 24/08/23
 
 debug = 0
 appdir = os.path.dirname(os.path.abspath(__file__))
@@ -393,7 +393,6 @@ def summary():
     days_all = (today - start_date).days
     span_blue = '<span style="color:#0763f7;">'
     span_end = '</span></td><td class="summary">'
-    order,count = cur_month_page_rank()
 
     out.write(f'<tr><td class="summary">{info_icon}</td>'
               f'<td class="summary">{span_blue}累積:{span_end}{num_all:>4} 冊</td>'
@@ -415,9 +414,17 @@ def summary():
               f'<td class="summary">{book_icon}</td>'
               f'<td class="summary">{span_blue}ページ:{span_end}{page_month:.0f} </td>'
               f'<td class="summary">{span_blue}月平均:{span_end}{page_month/days_month*30:.2f}</td>'
-              f'<td class="summary">{span_blue}日平均:{span_end}{page_month/days_month:.2f} 順位:{order}/{count}</td></tr>')
+              f'<td class="summary">{span_blue}日平均:{span_end}{page_month/days_month:.2f}</td></tr>')
 
     out.write('</tr>')
+
+def month_order() :
+    span_blue = '<span style="color:#0763f7;">'
+    span_end = '</span></td><td class="summary">'
+    order,count = cur_month_page_rank()
+    out.write(f'<tr><td class="summary">{info_icon}{span_blue} ページ数順位{span_end}</td>'
+              f'<td class="summary">{order}/{count} </td>'
+              f'</tr>')
 
 def post_pixela() :
     post_days = 14      #  最近の何日をpostするか
@@ -514,6 +521,9 @@ def parse_template() :
             continue
         if "%summary%" in line :
             summary()
+            continue
+        if "%month_order%" in line :
+            month_order()
             continue
 
         out.write(line)
