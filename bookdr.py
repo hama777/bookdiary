@@ -9,9 +9,8 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.17"   # 24/08/23
+version = "1.18"   # 24/08/26
 
-debug = 0
 appdir = os.path.dirname(os.path.abspath(__file__))
 
 conn_temp = (
@@ -45,6 +44,7 @@ def main_proc() :
     read_database()
     accumulate()
     calc_rank_page_month()
+    calc_rank_price_month()
     parse_template()
     if debug == 1 :
         return
@@ -53,7 +53,7 @@ def main_proc() :
     post_pixela()
 
 def read_config() :
-    global ftp_host,ftp_user,ftp_pass,ftp_url,dbfile,browser,pixela_url,pixela_token
+    global ftp_host,ftp_user,ftp_pass,ftp_url,dbfile,browser,pixela_url,pixela_token,debug
     if not os.path.isfile(conffile) :
         return
     conf = open(conffile,'r', encoding='utf-8')
@@ -65,6 +65,7 @@ def read_config() :
     ftp_url = conf.readline().strip()
     pixela_url = conf.readline().strip()
     pixela_token = conf.readline().strip()
+    debug  = int(conf.readline().strip())
     conf.close()
 
 def read_database():
@@ -197,9 +198,9 @@ def rank_page_month(flg) :
         if i == 30 : 
             break
 
-#  月別価格ランキング
-def rank_price_month(flg) :
-    # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
+#  月別価格ランキングの計算
+def calc_rank_price_month() :
+    global df_price_month
     price_list = []
     date_list = []
     for yy in range(1994,end_year+1) :
@@ -212,11 +213,16 @@ def rank_price_month(flg) :
             price_list.append(p)
             date_list.append(yy*100+mm)
             
-    df_page_month = pd.DataFrame(list(zip(date_list,price_list))
+    df_price_month = pd.DataFrame(list(zip(date_list,price_list))
         , columns = ['date','price'])
-    df_s = df_page_month.sort_values(by=['price'],ascending=False)
+    df_price_month = df_price_month.sort_values(by=['price'],ascending=False)
+
+
+#  月別価格ランキング
+def rank_price_month(flg) :
+    # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
     i = 0
-    for _, row in df_s.iterrows():
+    for _, row in df_price_month.iterrows():
         i = i+1
         if flg == 1 :
             if i > 10 :
