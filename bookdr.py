@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.18"   # 24/08/26
+version = "1.19"   # 24/08/27
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -167,18 +167,26 @@ def calc_rank_page_month() :
             
     df_page_month = pd.DataFrame(list(zip(date_list,page_list))
         , columns = ['date','page'])
-    df_page_month = df_page_month.sort_values(by=['page'],ascending=False)
+    #df_page_month = df_page_month.sort_values(by=['page'],ascending=False)
 
 # 今月のページ順位
 def  cur_month_page_rank() :
-    order = df_page_month['page'].rank(method='min',ascending=False).index[-1]  # 最終行(=今月)のindexを取得
+    order = int(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_page_month)
     return order,count
 
+# 今月の価格順位
+def  cur_month_price_rank() :
+    order = int(df_price_month['price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_price_month)
+    return order,count
+
+
 #  月別ページランキングの表示
 def rank_page_month(flg) :
+    df_page_month_sort = df_page_month.sort_values(by=['page'],ascending=False)
     i = 0
-    for _, row in df_page_month.iterrows():
+    for _, row in df_page_month_sort.iterrows():
         i = i+1
         if flg == 1 :
             if i > 10 :
@@ -215,14 +223,15 @@ def calc_rank_price_month() :
             
     df_price_month = pd.DataFrame(list(zip(date_list,price_list))
         , columns = ['date','price'])
-    df_price_month = df_price_month.sort_values(by=['price'],ascending=False)
+    #df_price_month = df_price_month.sort_values(by=['price'],ascending=False)
 
 
 #  月別価格ランキング
 def rank_price_month(flg) :
     # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
+    df_price_month_sort = df_price_month.sort_values(by=['price'],ascending=False)
     i = 0
-    for _, row in df_price_month.iterrows():
+    for _, row in df_price_month_sort.iterrows():
         i = i+1
         if flg == 1 :
             if i > 10 :
@@ -427,9 +436,12 @@ def summary():
 def month_order() :
     span_blue = '<span style="color:#0763f7;">'
     span_end = '</span></td><td class="summary">'
-    order,count = cur_month_page_rank()
+    page_order,count = cur_month_page_rank()
+    price_order,count = cur_month_price_rank()
     out.write(f'<tr><td class="summary">{info_icon}{span_blue} ページ数順位{span_end}</td>'
-              f'<td class="summary">{order}/{count} </td>'
+              f'<td class="summary">{page_order}/{count} </td>'
+              f'<td class="summary">{info_icon}{span_blue} 価格順位{span_end}</td>'
+              f'<td class="summary">{price_order}/{count} </td>'
               f'</tr>')
 
 def post_pixela() :
