@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.19"   # 24/08/27
+version = "1.20"   # 24/08/28
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -185,26 +185,27 @@ def  cur_month_price_rank() :
 #  月別ページランキングの表示
 def rank_page_month(flg) :
     df_page_month_sort = df_page_month.sort_values(by=['page'],ascending=False)
-    i = 0
-    for _, row in df_page_month_sort.iterrows():
-        i = i+1
-        if flg == 1 :
-            if i > 10 :
-                break
-        elif flg == 2 :
-            if i <= 10 :
-                continue
-            if i > 20 :
-                break
-        else :
-            if i <= 20 :
-                continue
+    rank_month_com(flg,df_page_month_sort,0)
+    # i = 0
+    # for _, row in df_page_month_sort.iterrows():
+    #     i = i+1
+    #     if flg == 1 :
+    #         if i > 10 :
+    #             break
+    #     elif flg == 2 :
+    #         if i <= 10 :
+    #             continue
+    #         if i > 20 :
+    #             break
+    #     else :
+    #         if i <= 20 :
+    #             continue
 
-        yy = int(row.date / 100)
-        mm = int(row.date % 100)
-        out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.page:5.0f}</td></tr>')
-        if i == 30 : 
-            break
+    #     yy = int(row.date / 100)
+    #     mm = int(row.date % 100)
+    #     out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.page:5.0f}</td></tr>')
+    #     if i == 30 : 
+    #         break
 
 #  月別価格ランキングの計算
 def calc_rank_price_month() :
@@ -230,8 +231,32 @@ def calc_rank_price_month() :
 def rank_price_month(flg) :
     # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
     df_price_month_sort = df_price_month.sort_values(by=['price'],ascending=False)
+    rank_month_com(flg,df_price_month_sort,1)
+    # i = 0
+    # for _, row in df_price_month_sort.iterrows():
+    #     i = i+1
+    #     if flg == 1 :
+    #         if i > 10 :
+    #             break
+    #     elif flg == 2 :
+    #         if i <= 10 :
+    #             continue
+    #         if i > 20 :
+    #             break
+    #     else :
+    #         if i <= 20 :
+    #             continue
+
+    #     yy = int(row.date / 100)
+    #     mm = int(row.date % 100)
+    #     out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.price:5.0f}</td></tr>')
+    #     if i == 30 : 
+    #         break
+
+def rank_month_com(flg,df,kind) :
+    # kind  0 ... page   1 .. price
     i = 0
-    for _, row in df_price_month_sort.iterrows():
+    for _, row in df.iterrows():
         i = i+1
         if flg == 1 :
             if i > 10 :
@@ -247,7 +272,10 @@ def rank_price_month(flg) :
 
         yy = int(row.date / 100)
         mm = int(row.date % 100)
-        out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.price:5.0f}</td></tr>')
+        if kind == 0 :
+            out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.page:5.0f}</td></tr>')
+        else :
+            out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.price:5.0f}</td></tr>')
         if i == 30 : 
             break
 
