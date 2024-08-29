@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.20"   # 24/08/28
+version = "1.21"   # 24/08/29
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -167,45 +167,6 @@ def calc_rank_page_month() :
             
     df_page_month = pd.DataFrame(list(zip(date_list,page_list))
         , columns = ['date','page'])
-    #df_page_month = df_page_month.sort_values(by=['page'],ascending=False)
-
-# 今月のページ順位
-def  cur_month_page_rank() :
-    order = int(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
-    count = len(df_page_month)
-    return order,count
-
-# 今月の価格順位
-def  cur_month_price_rank() :
-    order = int(df_price_month['price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
-    count = len(df_price_month)
-    return order,count
-
-
-#  月別ページランキングの表示
-def rank_page_month(flg) :
-    df_page_month_sort = df_page_month.sort_values(by=['page'],ascending=False)
-    rank_month_com(flg,df_page_month_sort,0)
-    # i = 0
-    # for _, row in df_page_month_sort.iterrows():
-    #     i = i+1
-    #     if flg == 1 :
-    #         if i > 10 :
-    #             break
-    #     elif flg == 2 :
-    #         if i <= 10 :
-    #             continue
-    #         if i > 20 :
-    #             break
-    #     else :
-    #         if i <= 20 :
-    #             continue
-
-    #     yy = int(row.date / 100)
-    #     mm = int(row.date % 100)
-    #     out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.page:5.0f}</td></tr>')
-    #     if i == 30 : 
-    #         break
 
 #  月別価格ランキングの計算
 def calc_rank_price_month() :
@@ -224,7 +185,26 @@ def calc_rank_price_month() :
             
     df_price_month = pd.DataFrame(list(zip(date_list,price_list))
         , columns = ['date','price'])
-    #df_price_month = df_price_month.sort_values(by=['price'],ascending=False)
+
+# 今月のページ順位
+def  cur_month_page_rank() :
+    order = int(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_page_month)
+    page = int(df_page_month['page'].iloc[-1])
+    return order,count,page
+
+# 今月の価格順位
+def  cur_month_price_rank() :
+    order = int(df_price_month['price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_price_month)
+    price = int(df_price_month['price'].iloc[-1])
+    return order,count,price
+
+
+#  月別ページランキングの表示
+def rank_page_month(flg) :
+    df_page_month_sort = df_page_month.sort_values(by=['page'],ascending=False)
+    rank_month_com(flg,df_page_month_sort,0)
 
 
 #  月別価格ランキング
@@ -232,26 +212,6 @@ def rank_price_month(flg) :
     # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
     df_price_month_sort = df_price_month.sort_values(by=['price'],ascending=False)
     rank_month_com(flg,df_price_month_sort,1)
-    # i = 0
-    # for _, row in df_price_month_sort.iterrows():
-    #     i = i+1
-    #     if flg == 1 :
-    #         if i > 10 :
-    #             break
-    #     elif flg == 2 :
-    #         if i <= 10 :
-    #             continue
-    #         if i > 20 :
-    #             break
-    #     else :
-    #         if i <= 20 :
-    #             continue
-
-    #     yy = int(row.date / 100)
-    #     mm = int(row.date % 100)
-    #     out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.price:5.0f}</td></tr>')
-    #     if i == 30 : 
-    #         break
 
 def rank_month_com(flg,df,kind) :
     # kind  0 ... page   1 .. price
@@ -464,11 +424,13 @@ def summary():
 def month_order() :
     span_blue = '<span style="color:#0763f7;">'
     span_end = '</span></td><td class="summary">'
-    page_order,count = cur_month_page_rank()
-    price_order,count = cur_month_price_rank()
+    page_order,count,cur_page = cur_month_page_rank()
+    price_order,count,cur_price = cur_month_price_rank()
     out.write(f'<tr><td class="summary">{info_icon}{span_blue} ページ数順位{span_end}</td>'
+              f'<td class="summary">{cur_page} </td>'
               f'<td class="summary">{page_order}/{count} </td>'
               f'<td class="summary">{info_icon}{span_blue} 価格順位{span_end}</td>'
+              f'<td class="summary">{cur_price} </td>'
               f'<td class="summary">{price_order}/{count} </td>'
               f'</tr>')
 
