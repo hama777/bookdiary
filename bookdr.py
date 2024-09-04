@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.21"   # 24/08/29
+version = "1.22"   # 24/09/03
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -33,6 +33,7 @@ star_icon = '<i class="fa-solid fa-star" style="color: #f57e0f;"></i>'
 #book_icon = '<i class="fa-sharp fa-light fa-book-open-cover fa-2xs" style="color: #f47710;"></i>'
 book_icon = '<i class="fa-solid fa-book" style="color: #f57e0f;"></i>'
 info_icon = '<i class="fa-solid fa-circle-info" style="color: #f57e0f;"></i>'
+yen_icon = '<i class="fa-solid fa-sack-dollar" style="color: #f57e0f;"></i>'
 pixela_url = ""
 pixela_token = ""
 
@@ -429,7 +430,7 @@ def month_order() :
     out.write(f'<tr><td class="summary">{info_icon}{span_blue} ページ数順位{span_end}</td>'
               f'<td class="summary">{cur_page} </td>'
               f'<td class="summary">{page_order}/{count} </td>'
-              f'<td class="summary">{info_icon}{span_blue} 価格順位{span_end}</td>'
+              f'<td class="summary">{yen_icon}{span_blue} 価格順位{span_end}</td>'
               f'<td class="summary">{cur_price} </td>'
               f'<td class="summary">{price_order}/{count} </td>'
               f'</tr>')
