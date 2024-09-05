@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.22"   # 24/09/03
+version = "1.23"   # 24/09/05
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -46,6 +46,7 @@ def main_proc() :
     accumulate()
     calc_rank_page_month()
     calc_rank_price_month()
+    calc_rank_month()
     parse_template()
     if debug == 1 :
         return
@@ -150,6 +151,29 @@ def rank_page_year():
     target_df = df[df['date'] >= datetime.datetime(target_yy,target_mm,1)]
     df_s = target_df.sort_values(by=['page'],ascending=False)
     rank_page_output(df_s,20)
+
+#  月ごとの  ページ、価格 のデータフレームを作成する
+def calc_rank_month() :
+    global df_month
+    date_list = []
+    page_list = []
+    price_list = []
+    for yy in range(1994,end_year+1) :
+        dfyy = df[df['date'].dt.year == yy]
+        for mm in range(1,13) : 
+            if yy == end_year and mm > cur_month :
+                break
+            dfmm = dfyy[dfyy['date'].dt.month == mm]
+            pg = dfmm['page'].sum()
+            page_list.append(pg)
+            pr = dfmm['price'].sum()
+            price_list.append(pr)
+            date_list.append(yy*100+mm)
+            
+    df_month = pd.DataFrame(list(zip(date_list,page_list,price_list))
+        , columns = ['date','page','price'])
+    print(df_month)
+
 
 #  月別ページランキングの計算
 def calc_rank_page_month() :
