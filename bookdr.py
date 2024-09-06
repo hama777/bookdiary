@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.23"   # 24/09/05
+version = "1.24"   # 24/09/06
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -213,6 +213,12 @@ def calc_rank_price_month() :
 
 # 今月のページ順位
 def  cur_month_page_rank() :
+    order = int(df_month['page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_month)
+    page = int(df_month['page'].iloc[-1])
+    return order,count,page
+
+def  cur_month_page_rank_old() :
     order = int(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_page_month)
     page = int(df_page_month['page'].iloc[-1])
@@ -220,11 +226,16 @@ def  cur_month_page_rank() :
 
 # 今月の価格順位
 def  cur_month_price_rank() :
+    order = int(df_month['price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_month)
+    price = int(df_month['price'].iloc[-1])
+    return order,count,price
+
+def  cur_month_price_rank_old() :
     order = int(df_price_month['price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_price_month)
     price = int(df_price_month['price'].iloc[-1])
     return order,count,price
-
 
 #  月別ページランキングの表示
 def rank_page_month(flg) :
