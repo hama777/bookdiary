@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.24"   # 24/09/06
+version = "1.25"   # 24/09/09
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -27,13 +27,13 @@ end_year = 2024     # 集計する最終年
 start_year = 1990
 cur_month = 0       # 現在の月
 accdata = {}        # 現在月までの累積データ   キー  年  値  リスト
-browser = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+#browser = "C:\Program Files\Google\Chrome\Application\chrome.exe"
 lastdate = ""
-star_icon = '<i class="fa-solid fa-star" style="color: #f57e0f;"></i>'
+star_icon = '<i class="fa-solid fa-star" style="color: #73e65a;"></i>'
 #book_icon = '<i class="fa-sharp fa-light fa-book-open-cover fa-2xs" style="color: #f47710;"></i>'
-book_icon = '<i class="fa-solid fa-book" style="color: #f57e0f;"></i>'
-info_icon = '<i class="fa-solid fa-circle-info" style="color: #f57e0f;"></i>'
-yen_icon = '<i class="fa-solid fa-sack-dollar" style="color: #f57e0f;"></i>'
+book_icon = '<i class="fa-solid fa-book" style="color: #73e65a;"></i>'
+info_icon = '<i class="fa-solid fa-circle-info" style="color: #73e65a;"></i>'
+yen_icon = '<i class="fa-solid fa-sack-dollar" style="color: #73e65a;"></i>'
 pixela_url = ""
 pixela_token = ""
 
@@ -218,23 +218,11 @@ def  cur_month_page_rank() :
     page = int(df_month['page'].iloc[-1])
     return order,count,page
 
-def  cur_month_page_rank_old() :
-    order = int(df_page_month['page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
-    count = len(df_page_month)
-    page = int(df_page_month['page'].iloc[-1])
-    return order,count,page
-
 # 今月の価格順位
 def  cur_month_price_rank() :
     order = int(df_month['price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_month)
     price = int(df_month['price'].iloc[-1])
-    return order,count,price
-
-def  cur_month_price_rank_old() :
-    order = int(df_price_month['price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
-    count = len(df_price_month)
-    price = int(df_price_month['price'].iloc[-1])
     return order,count,price
 
 #  月別ページランキングの表示
@@ -346,6 +334,9 @@ def month_table() :
             dfmm = dfyy[dfyy['date'].dt.month == mm]
             n = len(dfmm)               # 冊数
             lib = dfmm['lib'].sum()     # 図書館冊数
+            librate = 0 
+            if n != 0 :
+                librate = lib/n*100
             
             if n == 0 :
                 page_mean = 0 
@@ -359,7 +350,7 @@ def month_table() :
                     f"<td align='right'>{page_mean:5.1f}</td>"
                     f"<td align='right'>{dfmm['price'].sum():5.0f}</td>"
                     f"<td align='right'>{price_mean:5.1f}</td>"
-                    f"<td align='right'>{lib:5.0f}</td><td align='right'>{lib/n*100:3.1f}</td>"
+                    f"<td align='right'>{lib:5.0f}</td><td align='right'>{librate:3.1f}</td>"
                     f"</tr>\n")
 
 def year_table() :
@@ -368,13 +359,17 @@ def year_table() :
         dfyy = df[df['date'].dt.year == yy]
         n = len(dfyy)               # 冊数
         lib = dfyy['lib'].sum()     # 図書館冊数
+        librate = 0 
+        if n != 0 :
+            librate = lib/n*100
+        
 
         out.write(f"<tr><td>{yy}</td><td align='right'>{n}</td>"
                   f"<td align='right'>{dfyy['page'].sum():5.0f}</td>"
                   f"<td align='right'>{dfyy['page'].mean():5.1f}</td>"
                   f"<td align='right'>{dfyy['price'].sum():5.0f}</td>"
                   f"<td align='right'>{dfyy['price'].mean():5.1f}</td>"
-                  f"<td align='right'>{lib:5.0f}</td><td align='right'>{lib/n*100:3.1f}</td>"
+                  f"<td align='right'>{lib:5.0f}</td><td align='right'>{librate:3.1f}</td>"
                   f"</tr>\n")
 
 def monthly_graph():
