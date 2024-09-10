@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.25"   # 24/09/09
+version = "1.26"   # 24/09/10
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -44,13 +44,11 @@ def main_proc() :
     read_config()
     read_database()
     accumulate()
-    calc_rank_page_month()
-    calc_rank_price_month()
     calc_rank_month()
     parse_template()
     if debug == 1 :
         return
-    result = subprocess.run((browser, resultfile))
+    _  = subprocess.run((browser, resultfile))
     ftp_upload()
     post_pixela()
 
@@ -123,6 +121,7 @@ def rank_price_year():
     df_s = target_df.sort_values(by=['price'],ascending=False)
     rank_price_output(df_s,20)
 
+#   価格ランキングの表示   上位 n 個を表示する
 def rank_price_output(target_df,n) :
     i = 0 
     for _, row in target_df.iterrows():
@@ -172,44 +171,6 @@ def calc_rank_month() :
             
     df_month = pd.DataFrame(list(zip(date_list,page_list,price_list))
         , columns = ['date','page','price'])
-    print(df_month)
-
-
-#  月別ページランキングの計算
-def calc_rank_page_month() :
-    global df_page_month
-    page_list = []
-    date_list = []
-    for yy in range(1994,end_year+1) :
-        dfyy = df[df['date'].dt.year == yy]
-        for mm in range(1,13) : 
-            if yy == end_year and mm > cur_month :
-                break
-            dfmm = dfyy[dfyy['date'].dt.month == mm]
-            p = dfmm['page'].sum()
-            page_list.append(p)
-            date_list.append(yy*100+mm)
-            
-    df_page_month = pd.DataFrame(list(zip(date_list,page_list))
-        , columns = ['date','page'])
-
-#  月別価格ランキングの計算
-def calc_rank_price_month() :
-    global df_price_month
-    price_list = []
-    date_list = []
-    for yy in range(1994,end_year+1) :
-        dfyy = df[df['date'].dt.year == yy]
-        for mm in range(1,13) : 
-            if yy == end_year and mm > cur_month :
-                break
-            dfmm = dfyy[dfyy['date'].dt.month == mm]
-            p = dfmm['price'].sum()
-            price_list.append(p)
-            date_list.append(yy*100+mm)
-            
-    df_price_month = pd.DataFrame(list(zip(date_list,price_list))
-        , columns = ['date','price'])
 
 # 今月のページ順位
 def  cur_month_page_rank() :
@@ -227,14 +188,14 @@ def  cur_month_price_rank() :
 
 #  月別ページランキングの表示
 def rank_page_month(flg) :
-    df_page_month_sort = df_page_month.sort_values(by=['page'],ascending=False)
+    df_page_month_sort = df_month.sort_values(by=['page'],ascending=False)
     rank_month_com(flg,df_page_month_sort,0)
 
 
 #  月別価格ランキング
 def rank_price_month(flg) :
     # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
-    df_price_month_sort = df_price_month.sort_values(by=['price'],ascending=False)
+    df_price_month_sort = df_month.sort_values(by=['price'],ascending=False)
     rank_month_com(flg,df_price_month_sort,1)
 
 def rank_month_com(flg,df,kind) :
@@ -362,7 +323,6 @@ def year_table() :
         librate = 0 
         if n != 0 :
             librate = lib/n*100
-        
 
         out.write(f"<tr><td>{yy}</td><td align='right'>{n}</td>"
                   f"<td align='right'>{dfyy['page'].sum():5.0f}</td>"
