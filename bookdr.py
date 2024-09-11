@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.26"   # 24/09/10
+version = "1.27"   # 24/09/11
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,6 +45,7 @@ def main_proc() :
     read_database()
     accumulate()
     calc_rank_month()
+    create_df_year()
     parse_template()
     if debug == 1 :
         return
@@ -101,7 +102,6 @@ def read_database():
 
     df = pd.DataFrame(list(zip(date_list,price_list,page_list,lib_list,title_list))
         , columns = ['date','price','page','lib','title'])
-
 
 #   価格ランキング
 def rank_price():
@@ -171,6 +171,27 @@ def calc_rank_month() :
             
     df_month = pd.DataFrame(list(zip(date_list,page_list,price_list))
         , columns = ['date','page','price'])
+
+#  年ごとの  ページ、価格 のデータフレームを作成する
+def create_df_year() :
+    global df_year
+    date_list = []
+    page_list = []
+    price_list = []
+    cnt_list = []
+    for yy in range(1994,end_year+1) :
+        dfyy = df[df['date'].dt.year == yy]
+        pg = dfyy['page'].sum()
+        page_list.append(pg)
+        pr = dfyy['price'].sum()
+        price_list.append(pr)
+        cnt = dfyy['title'].count()
+        cnt_list.append(cnt)
+        date_list.append(yy)
+            
+    df_year = pd.DataFrame(list(zip(date_list,page_list,price_list,cnt_list))
+        , columns = ['date','page','price','cnt'])
+    print(df_year)
 
 # 今月のページ順位
 def  cur_month_page_rank() :
