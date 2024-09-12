@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.27"   # 24/09/11
+version = "1.28"   # 24/09/12
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -175,23 +175,42 @@ def calc_rank_month() :
 #  年ごとの  ページ、価格 のデータフレームを作成する
 def create_df_year() :
     global df_year
+    today = date.today()
+    start_date = date(today.year, 1, 1)
+    days_year = (today - start_date).days   #  1/1 からの日数
+
     date_list = []
     page_list = []
+    ave_page_list = []   #  日平均ページ数
     price_list = []
     cnt_list = []
     for yy in range(1994,end_year+1) :
         dfyy = df[df['date'].dt.year == yy]
         pg = dfyy['page'].sum()
         page_list.append(pg)
+        ave = pg / 365
+        if yy == end_year :
+            ave = pg / days_year
+        ave_page_list.append(ave)
         pr = dfyy['price'].sum()
         price_list.append(pr)
         cnt = dfyy['title'].count()
         cnt_list.append(cnt)
         date_list.append(yy)
             
-    df_year = pd.DataFrame(list(zip(date_list,page_list,price_list,cnt_list))
-        , columns = ['date','page','price','cnt'])
-    print(df_year)
+    df_year = pd.DataFrame(list(zip(date_list,page_list,price_list,cnt_list,ave_page_list))
+        , columns = ['date','page','price','cnt','ave_page'])
+    #print(df_year)
+    o,c,p = cur_year_page_rank()
+    print(o,c,p)
+
+# 今年のページ順位
+def  cur_year_page_rank() :
+    order = int(df_year['ave_page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_year)
+    ave_page = df_year['ave_page'].iloc[-1]
+    #page = int(df_year['ave_page'].iloc[-1])
+    return order,count,ave_page
 
 # 今月のページ順位
 def  cur_month_page_rank() :
