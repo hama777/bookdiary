@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.28"   # 24/09/12
+version = "1.29"   # 24/09/13
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -210,6 +210,7 @@ def  cur_year_page_rank() :
     count = len(df_year)
     ave_page = df_year['ave_page'].iloc[-1]
     #page = int(df_year['ave_page'].iloc[-1])
+
     return order,count,ave_page
 
 # 今月のページ順位
@@ -457,12 +458,27 @@ def month_order() :
     span_end = '</span></td><td class="summary">'
     page_order,count,cur_page = cur_month_page_rank()
     price_order,count,cur_price = cur_month_price_rank()
-    out.write(f'<tr><td class="summary">{info_icon}{span_blue} ページ数順位{span_end}</td>'
+    out.write(f'<tr><td class="summary">{info_icon}{span_blue}今月 ページ数順位{span_end}</td>'
               f'<td class="summary">{cur_page} </td>'
               f'<td class="summary">{page_order}/{count} </td>'
               f'<td class="summary">{yen_icon}{span_blue} 価格順位{span_end}</td>'
               f'<td class="summary">{cur_price} </td>'
               f'<td class="summary">{price_order}/{count} </td>'
+              f'</tr>')
+    year_order()
+
+def year_order() :
+    span_blue = '<span style="color:#0763f7;">'
+    span_end = '</span></td><td class="summary">'
+    o,c,p = cur_year_page_rank()
+    page_order,count,cur_page = cur_month_page_rank()
+#    price_order,count,cur_price = cur_month_price_rank()
+    out.write(f'<tr><td class="summary">{info_icon}{span_blue}今年 ページ数順位{span_end}</td>'
+              f'<td class="summary">{p:.1f} </td>'
+              f'<td class="summary">{o}/{c} </td>'
+              f'<td class="summary">  価格順位</td>'
+              f'<td class="summary"> </td>'
+              f'<td class="summary"> </td>'
               f'</tr>')
 
 def post_pixela() :
