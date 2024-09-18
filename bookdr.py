@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.30"   # 24/09/17
+version = "1.31"   # 24/09/18
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -200,12 +200,17 @@ def create_df_year() :
             
     df_year = pd.DataFrame(list(zip(date_list,page_list,price_list,cnt_list,ave_page_list))
         , columns = ['date','page','price','cnt','ave_page'])
-    #print(df_year)
-    o,c,p = cur_year_page_rank()
-    print(o,c,p)
 
 # 今年のページ順位
 def  cur_year_page_rank() :
+    order = int(df_year['page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_year)
+    page = df_year['page'].iloc[-1]
+
+    return order,count,page
+
+# 今年の平均ページ順位
+def  cur_year_ave_page_rank() :
     order = int(df_year['ave_page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_year)
     ave_page = df_year['ave_page'].iloc[-1]
@@ -473,20 +478,23 @@ def month_order() :
               f'<td class="summary">{cur_price} </td>'
               f'<td class="summary">{price_order}/{count} </td>'
               f'</tr>')
-    year_order()
 
 def year_order() :
     span_blue = '<span style="color:#0763f7;">'
     span_end = '</span></td><td class="summary">'
-    page_order,count,ave_page = cur_year_page_rank()
+    ave_page_order,count,ave_page = cur_year_ave_page_rank()
+    page_order,count,page = cur_year_page_rank()
     price_order,count,acc_price = cur_year_price_rank()
-#    page_order,count,cur_page = cur_month_page_rank()
-#    price_order,count,cur_price = cur_month_price_rank()
-    out.write(f'<tr><td class="summary">{info_icon}{span_blue}今年 ページ数順位{span_end}</td>'
+    out.write(f'<tr><td class="summary">{info_icon}{span_blue}今年 1日ページ数{span_end}</td>'
               f'<td class="summary">{ave_page:.1f} </td>'
-              f'<td class="summary">{page_order}/{count} </td>'
-              f'<td class="summary">{yen_icon}{span_blue}  価格順位{span_end}</td>'
+              f'<td class="summary">{span_blue}順位{span_end} </td>'
+              f'<td class="summary">{ave_page_order}/{count} </td>'
+              f'<td class="summary">{span_blue}累積ページ数{span_end} </td>'
+              f'<td class="summary">{page} </td>'
+              f'<td class="summary">順位 {page_order}/{count} </td>'
+              f'<td class="summary">{yen_icon}{span_blue}累積価格{span_end} </td>'
               f'<td class="summary">{acc_price} </td>'
+              f'<td class="summary">{span_blue}  順位{span_end}</td>'
               f'<td class="summary">{price_order}/{count}  </td>'
               f'</tr>')
 
@@ -588,6 +596,9 @@ def parse_template() :
             continue
         if "%month_order%" in line :
             month_order()
+            continue
+        if "%year_order%" in line :
+            year_order()
             continue
 
         out.write(line)
