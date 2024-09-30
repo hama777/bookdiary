@@ -9,7 +9,7 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.31"   # 24/09/18
+version = "1.32"   # 24/09/30
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -254,6 +254,7 @@ def rank_price_month(flg) :
 
 def rank_month_com(flg,df,kind) :
     # kind  0 ... page   1 .. price
+
     i = 0
     for _, row in df.iterrows():
         i = i+1
@@ -269,12 +270,16 @@ def rank_month_com(flg,df,kind) :
             if i <= 20 :
                 continue
 
-        yy = int(row.date / 100)
-        mm = int(row.date % 100)
+        yymm = int(row.date) 
+        yy = int(yymm / 100 )
+        mm = yymm % 100
+        str_yymm = f'{yy}/{mm:02}'
+        if yymm  == cur_yymm :     #  今月は赤字
+            str_yymm = f'<span class=red>{str_yymm}</span>'
         if kind == 0 :
-            out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.page:5.0f}</td></tr>')
+            out.write(f'<tr><td align="right">{i}</td><td>{str_yymm}</td><td align="right">{int(row.page):,}</td></tr>')
         else :
-            out.write(f'<tr><td align="right">{i}</td><td>{yy}/{mm:02}</td><td align="right">{row.price:5.0f}</td></tr>')
+            out.write(f'<tr><td align="right">{i}</td><td>{str_yymm}</td><td align="right">{int(row.price):,}</td></tr>')
         if i == 30 : 
             break
 
@@ -419,9 +424,12 @@ def year_librate_graph():
         out.write(f"['{yy2:02}',{librate_year_ave[yy]}],") 
 
 def today(s):
+    global cur_yymm
     d = datetime.datetime.today().strftime("%m/%d %H:%M")
     s = s.replace("%today%",d)
     out.write(s)
+    today = date.today()
+    cur_yymm = today.year * 100 + today.month
 
 def summary():
     num_all = len(df)
