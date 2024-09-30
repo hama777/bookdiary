@@ -52,3 +52,6 @@ td.right{
 .flex {
     display: flex;
 }
+span.red {
+    color : red;
+}
