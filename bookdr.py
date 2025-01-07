@@ -9,7 +9,8 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-version = "1.32"   # 24/09/30
+# 25/01/07 v1.33  年処理
+version = "1.33"
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -23,14 +24,11 @@ templatefile = appdir + "./bktemplate.htm"
 resultfile = appdir + "./bookdr.htm"
 conffile = appdir + "./bookdr.conf"
 dbfile = ""
-end_year = 2024     # 集計する最終年
 start_year = 1990
-cur_month = 0       # 現在の月
+end_year = 0        # 集計する最終年
 accdata = {}        # 現在月までの累積データ   キー  年  値  リスト
-#browser = "C:\Program Files\Google\Chrome\Application\chrome.exe"
 lastdate = ""
 star_icon = '<i class="fa-solid fa-star" style="color: #73e65a;"></i>'
-#book_icon = '<i class="fa-sharp fa-light fa-book-open-cover fa-2xs" style="color: #f47710;"></i>'
 book_icon = '<i class="fa-solid fa-book" style="color: #73e65a;"></i>'
 info_icon = '<i class="fa-solid fa-circle-info" style="color: #73e65a;"></i>'
 yen_icon = '<i class="fa-solid fa-sack-dollar" style="color: #73e65a;"></i>'
@@ -38,9 +36,10 @@ pixela_url = ""
 pixela_token = ""
 
 def main_proc() :
-    global cur_month
-    d = datetime.datetime.today()
-    cur_month = d.month
+    global end_year
+    date_settings()
+    end_year = today_yy  # 集計する最終年
+
     read_config()
     read_database()
     accumulate()
@@ -111,7 +110,7 @@ def rank_price():
 #   価格ランキング 365日
 def rank_price_year():
     #  1年前の同月(を含まない)以降からのランキング
-    target_mm = cur_month + 1 
+    target_mm = today_mm + 1 
     if target_mm == 13 :
         target_mm = 1 
     target_yy = end_year -1 
@@ -143,7 +142,7 @@ def rank_page():
 #   ページランキング 365日
 def rank_page_year():
     #  1年前の同月(を含まない)以降からのランキング
-    target_mm = cur_month + 1 
+    target_mm = today_mm + 1 
     if target_mm == 13 :
         target_mm = 1 
     target_yy = end_year -1 
@@ -160,7 +159,7 @@ def calc_rank_month() :
     for yy in range(1994,end_year+1) :
         dfyy = df[df['date'].dt.year == yy]
         for mm in range(1,13) : 
-            if yy == end_year and mm > cur_month :
+            if yy == end_year and mm > today_mm :
                 break
             dfmm = dfyy[dfyy['date'].dt.month == mm]
             pg = dfmm['page'].sum()
@@ -274,7 +273,7 @@ def rank_month_com(flg,df,kind) :
         yy = int(yymm / 100 )
         mm = yymm % 100
         str_yymm = f'{yy}/{mm:02}'
-        if yymm  == cur_yymm :     #  今月は赤字
+        if yymm  == today_yymm :     #  今月は赤字
             str_yymm = f'<span class=red>{str_yymm}</span>'
         if kind == 0 :
             out.write(f'<tr><td align="right">{i}</td><td>{str_yymm}</td><td align="right">{int(row.page):,}</td></tr>')
@@ -304,7 +303,7 @@ def accumulate() :
         
         dfmmacc = ""
         acclist = []
-        for mm in range(1,cur_month+1) :
+        for mm in range(1,today_mm+1) :
             dfmm = dfyy[dfyy['date'].dt.month == mm]
             if mm == 1 :
                 dfmmacc = dfmm
@@ -349,7 +348,7 @@ def month_table() :
     for yy in range(end_year-2,end_year+1) :    # 3年分
         dfyy = df[df['date'].dt.year == yy]
         for mm in range(1,13) :                 #  1 - 12 月
-            if yy == end_year and mm > cur_month :
+            if yy == end_year and mm > today_mm :
                 break
             dfmm = dfyy[dfyy['date'].dt.month == mm]
             n = len(dfmm)               # 冊数
@@ -384,9 +383,9 @@ def year_table() :
             librate = lib/n*100
 
         out.write(f"<tr><td>{yy}</td><td align='right'>{n}</td>"
-                  f"<td align='right'>{dfyy['page'].sum():5.0f}</td>"
+                  f"<td align='right'>{dfyy['page'].sum():5,.0f}</td>"
                   f"<td align='right'>{dfyy['page'].mean():5.1f}</td>"
-                  f"<td align='right'>{dfyy['price'].sum():5.0f}</td>"
+                  f"<td align='right'>{dfyy['price'].sum():5,.0f}</td>"
                   f"<td align='right'>{dfyy['price'].mean():5.1f}</td>"
                   f"<td align='right'>{lib:5.0f}</td><td align='right'>{librate:3.1f}</td>"
                   f"</tr>\n")
@@ -423,13 +422,21 @@ def year_librate_graph():
         yy2 = yy % 100
         out.write(f"['{yy2:02}',{librate_year_ave[yy]}],") 
 
+def date_settings():
+    global  today_date,today_mm,today_dd,today_yy,lastdate,today_datetime,today_yymm
+    today_datetime = datetime.datetime.today()
+    today_date = datetime.date.today()
+    today_mm = today_date.month
+    today_dd = today_date.day
+    today_yy = today_date.year
+    today_yymm = today_yy * 100 + today_mm  # yyyymm の形式にする
+    #print(today_yymm)
+    #lastdate = today_date - timedelta(days=1)
+
 def today(s):
-    global cur_yymm
-    d = datetime.datetime.today().strftime("%m/%d %H:%M")
+    d = today_datetime.strftime("%m/%d %H:%M")
     s = s.replace("%today%",d)
     out.write(s)
-    today = date.today()
-    cur_yymm = today.year * 100 + today.month
 
 def summary():
     num_all = len(df)
@@ -437,16 +444,15 @@ def summary():
     dfyy = df[df['date'].dt.year == end_year]
     num_year  = len(dfyy)
     page_year = dfyy['page'].sum()
-    dfmm = dfyy[dfyy['date'].dt.month == cur_month]
+    dfmm = dfyy[dfyy['date'].dt.month == today_mm]
     num_month  = len(dfmm)
     page_month = dfmm['page'].sum()
-    today = date.today()
-    start_date = date(today.year, 1, 1)
-    days_year = (today - start_date).days
-    start_date = date(today.year, today.month, 1)
-    days_month = (today - start_date).days + 1
+    start_date = date(today_yy, 1, 1)
+    days_year = (today_date - start_date).days
+    start_date = date(today_yy, today_mm, 1)
+    days_month = (today_date - start_date).days + 1
     start_date = date(1990, 4, 1)
-    days_all = (today - start_date).days
+    days_all = (today_date - start_date).days
     span_blue = '<span style="color:#0763f7;">'
     span_end = '</span></td><td class="summary">'
 
@@ -579,7 +585,7 @@ def parse_template() :
             rank_price_month(3)
             continue
         if "%cur_month%" in line :
-            out.write(f'{cur_month} 月現在')
+            out.write(f'{today_mm} 月現在')
             continue
         if "%today%" in line :
             today(line)
