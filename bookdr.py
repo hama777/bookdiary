@@ -9,8 +9,8 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 25/01/07 v1.33  年処理
-version = "1.33"
+# 25/02/12 v1.34 Newサマリ開発中
+version = "1.34"
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -480,6 +480,33 @@ def summary():
 
     out.write('</tr>')
 
+def summary_new() :
+    num_all = len(df)              # 全冊数
+    page_all = df['page'].sum()
+    dfyy = df[df['date'].dt.year == end_year]
+    num_year  = len(dfyy)          # 今年の冊数
+    page_year = dfyy['page'].sum()
+    dfmm = dfyy[dfyy['date'].dt.month == today_mm]
+    num_month  = len(dfmm)         # 今月の冊数
+    page_month = dfmm['page'].sum()
+    price_month = dfmm['price'].sum()
+    start_date = date(today_yy, 1, 1)
+    days_year = (today_date - start_date).days
+    start_date = date(today_yy, today_mm, 1)
+    days_month = (today_date - start_date).days + 1
+    start_date = date(1990, 4, 1)
+    days_all = (today_date - start_date).days
+
+    
+
+    out.write('<tr>')
+    out.write(f'<td>今月</td><td>{num_month}</td><td>{num_month/days_month*30:.2f}</td>')
+    out.write(f'<td>{page_month:.0f}</td><td>{page_month/days_month:.2f}</td>')
+    out.write(f'<td>{price_month:.0f}</td><td>{price_month/days_month*30:.0f}</td>')
+    out.write('</tr>\n')
+
+
+
 def month_order() :
     span_blue = '<span style="color:#0763f7;">'
     span_end = '</span></td><td class="summary">'
@@ -607,6 +634,9 @@ def parse_template() :
             continue
         if "%summary%" in line :
             summary()
+            continue
+        if "%summary2%" in line :
+            summary_new()
             continue
         if "%month_order%" in line :
             month_order()
