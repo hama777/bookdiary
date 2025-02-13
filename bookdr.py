@@ -9,8 +9,8 @@ import requests
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 25/02/12 v1.34 Newサマリ開発中
-version = "1.34"
+# 25/02/13 v1.35 Newサマリ開発中
+version = "1.35"
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -483,13 +483,18 @@ def summary():
 def summary_new() :
     num_all = len(df)              # 全冊数
     page_all = df['page'].sum()
+    price_all = df['price'].sum()
+
     dfyy = df[df['date'].dt.year == end_year]
     num_year  = len(dfyy)          # 今年の冊数
     page_year = dfyy['page'].sum()
+    price_year = dfyy['price'].sum()
+
     dfmm = dfyy[dfyy['date'].dt.month == today_mm]
     num_month  = len(dfmm)         # 今月の冊数
     page_month = dfmm['page'].sum()
     price_month = dfmm['price'].sum()
+
     start_date = date(today_yy, 1, 1)
     days_year = (today_date - start_date).days
     start_date = date(today_yy, today_mm, 1)
@@ -497,14 +502,30 @@ def summary_new() :
     start_date = date(1990, 4, 1)
     days_all = (today_date - start_date).days
 
-    
+    page_order,count,cur_page = cur_month_page_rank()
+    price_order,count,cur_price = cur_month_price_rank()
 
     out.write('<tr>')
     out.write(f'<td>今月</td><td>{num_month}</td><td>{num_month/days_month*30:.2f}</td>')
-    out.write(f'<td>{page_month:.0f}</td><td>{page_month/days_month:.2f}</td>')
-    out.write(f'<td>{price_month:.0f}</td><td>{price_month/days_month*30:.0f}</td>')
+    out.write(f'<td>{page_month:.0f}({page_order}/{count})</td><td>{page_month/days_month:.2f}</td>')
+    out.write(f'<td>{price_month:.0f}({price_order}/{count})</td><td>{price_month/days_month*30:.0f}</td>')
     out.write('</tr>\n')
 
+    ave_page_order,count,ave_page = cur_year_ave_page_rank()
+    page_order,count,page = cur_year_page_rank()
+    price_order,count,acc_price = cur_year_price_rank()
+
+    out.write('<tr>')
+    out.write(f'<td>今年</td><td>{num_year}</td><td>{num_year/days_year*30:.2f}</td>')
+    out.write(f'<td>{page_year:.0f}({page_order}/{count})</td><td>{page_year/days_year:.2f}({ave_page_order}/{count})</td>')
+    out.write(f'<td>{price_year:.0f}({price_order}/{count})</td><td>{price_year/days_year*30:.0f}</td>')
+    out.write('</tr>\n')
+
+    out.write('<tr>')
+    out.write(f'<td>総合</td><td>{num_all}</td><td>{num_all/days_all*30:.2f}</td>')
+    out.write(f'<td>{page_all:.0f}</td><td>{page_all/days_all:.2f}</td>')
+    out.write(f'<td>{price_all:.0f}</td><td>{price_all/days_all*30:.0f}</td>')
+    out.write('</tr>\n')
 
 
 def month_order() :
