@@ -1,4 +1,4 @@
-/*  コメント */
+/*  25/02/15 v1.37 Newサマリ追加  */
 table,td, th   { 
     font-family: "Meiryo UI" ; 
     font-size: 14px; 
@@ -31,7 +31,7 @@ a {
     text-decoration: none; 
 }
 th { 
-    background-color :#73e65a;
+    background-color :#30a313;
 }
 tr { 
     background-color : #ffffff;
