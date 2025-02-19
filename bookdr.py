@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 25/02/15 v1.37 Newサマリ追加
-version = "1.37"
+# 25/02/19 v1.38 サマリに今月冊数順位追加
+version = "1.38"
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -155,6 +155,7 @@ def rank_page_year():
 def calc_rank_month() :
     global df_month
     date_list = []
+    count_list = []      #  月冊数
     page_list = []
     price_list = []
     ave_page_list = []   #  日平均ページ数
@@ -165,6 +166,8 @@ def calc_rank_month() :
             if yy == end_year and mm > today_mm :
                 break
             dfmm = dfyy[dfyy['date'].dt.month == mm]
+            count = len(dfmm)
+            count_list.append(count)
             pg = dfmm['page'].sum()
             page_list.append(pg)
             pr = dfmm['price'].sum()
@@ -179,8 +182,8 @@ def calc_rank_month() :
                 ave_price = pr / today_dd * 30
             ave_price_list.append(ave_price)
 
-    df_month = pd.DataFrame(list(zip(date_list,page_list,price_list,ave_page_list,ave_price_list))
-        , columns = ['date','page','price','ave_page','ave_price'])
+    df_month = pd.DataFrame(list(zip(date_list,count_list,page_list,price_list,ave_page_list,ave_price_list))
+        , columns = ['date','count','page','price','ave_page','ave_price'])
 
 #  年ごとの  ページ、価格 のデータフレームを作成する
 def create_df_year() :
@@ -247,6 +250,12 @@ def  cur_year_ave_price_rank() :
     price = int(df_year['ave_price'].iloc[-1])
 
     return order,count,price
+
+# 今月の冊数順位
+def  cur_month_count_rank() :
+    order = int(df_month['count'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_month)
+    return order,count
 
 # 今月のページ順位
 def  cur_month_page_rank() :
@@ -539,13 +548,14 @@ def summary_new() :
     start_date = date(1990, 4, 1)
     days_all = (today_date - start_date).days
 
+    count_order,count = cur_month_count_rank()
     ave_page_order,count,ave_page = cur_month_ave_page_rank()
     page_order,count,cur_page = cur_month_page_rank()
     price_order,count,cur_price = cur_month_price_rank()
     ave_price_order,count,cur_price = cur_month_ave_price_rank()
         
     out.write('<tr>')
-    out.write(f'<td>今月</td><td align="right">{num_month}</td><td align="right">{num_month/days_month*30:.2f}</td>')
+    out.write(f'<td>今月</td><td align="right">{num_month}</td><td align="right">{count_order}/{count}</td><td align="right">{num_month/days_month*30:.2f}</td>')
     out.write(f'<td align="right">{page_month:,.0f}</td><td align="right">{page_order}/{count}</td>')
     out.write(f'<td align="right">{page_month/days_month:.0f}</td><td align="right">{ave_page_order}/{count}</td>')
     out.write(f'<td align="right">{price_month:,.0f}</td><td align="right">{price_order}/{count}</td>')
@@ -559,7 +569,7 @@ def summary_new() :
     ave_price_order,count,acc_price = cur_year_ave_price_rank()
 
     out.write('<tr>')
-    out.write(f'<td>今年</td><td  align="right">{num_year}</td><td  align="right">{num_year/days_year*30:.2f}</td>')
+    out.write(f'<td>今年</td><td  align="right">{num_year}</td><td></td><td  align="right">{num_year/days_year*30:.2f}</td>')
     out.write(f'<td align="right">{page_year:,.0f}</td><td  align="right">{page_order}/{count}</td>')
     out.write(f'<td align="right">{page_year/days_year:.0f}</td><td  align="right">{ave_page_order}/{count}</td>')
     out.write(f'<td align="right">{price_year:,.0f}</td><td  align="right">{price_order}/{count}</td>')
@@ -568,7 +578,7 @@ def summary_new() :
     out.write('</tr>\n')
 
     out.write('<tr>')
-    out.write(f'<td>総合</td><td align="right">{num_all}</td><td  align="right">{num_all/days_all*30:.2f}</td>')
+    out.write(f'<td>総合</td><td align="right">{num_all}</td><td></td><td  align="right">{num_all/days_all*30:.2f}</td>')
     out.write(f'<td  align="right">{page_all:,.0f}</td><td></td><td  align="right">{page_all/days_all:.0f}</td></td><td>')
     out.write(f'<td  align="right">{price_all:,.0f}</td><td></td><td  align="right">{price_all/days_all*30:,.0f}</td>')
     out.write(f'<td align="right"></td>')
