@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 25/02/19 v1.38 サマリに今月冊数順位追加
-version = "1.38"
+# 25/02/20 v1.39 サマリに今年冊数順位追加
+version = "1.39"
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -193,6 +193,7 @@ def create_df_year() :
     days_year = (today - start_date).days   #  1/1 からの日数
 
     date_list = []
+    count_list = []      #  年冊数
     page_list = []
     ave_page_list = []   #  日平均ページ数
     price_list = []
@@ -200,6 +201,8 @@ def create_df_year() :
     cnt_list = []
     for yy in range(1994,end_year+1) :
         dfyy = df[df['date'].dt.year == yy]
+        count = len(dfyy)
+        count_list.append(count)
         pg = dfyy['page'].sum()
         page_list.append(pg)
         ave = pg / 365
@@ -216,8 +219,14 @@ def create_df_year() :
         cnt_list.append(cnt)
         date_list.append(yy)
             
-    df_year = pd.DataFrame(list(zip(date_list,page_list,price_list,cnt_list,ave_page_list,ave_price_list))
-        , columns = ['date','page','price','cnt','ave_page','ave_price'])
+    df_year = pd.DataFrame(list(zip(date_list,count_list,page_list,price_list,cnt_list,ave_page_list,ave_price_list))
+        , columns = ['date','count','page','price','cnt','ave_page','ave_price'])
+
+# 今年の冊数順位
+def  cur_year_count_rank() :
+    order = int(df_year['count'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_year)
+    return order,count
 
 # 今年のページ順位
 def  cur_year_page_rank() :
@@ -563,13 +572,14 @@ def summary_new() :
     out.write(f'<td align="right">{ave_price_order}/{count}</td>')
     out.write('</tr>\n')
 
+    count_order,count = cur_year_count_rank()
     ave_page_order,count,ave_page = cur_year_ave_page_rank()
     page_order,count,page = cur_year_page_rank()
     price_order,count,acc_price = cur_year_price_rank()
     ave_price_order,count,acc_price = cur_year_ave_price_rank()
 
     out.write('<tr>')
-    out.write(f'<td>今年</td><td  align="right">{num_year}</td><td></td><td  align="right">{num_year/days_year*30:.2f}</td>')
+    out.write(f'<td>今年</td><td  align="right">{num_year}</td><td align="right">{count_order}/{count}</td><td  align="right">{num_year/days_year*30:.2f}</td>')
     out.write(f'<td align="right">{page_year:,.0f}</td><td  align="right">{page_order}/{count}</td>')
     out.write(f'<td align="right">{page_year/days_year:.0f}</td><td  align="right">{ave_page_order}/{count}</td>')
     out.write(f'<td align="right">{price_year:,.0f}</td><td  align="right">{price_order}/{count}</td>')
