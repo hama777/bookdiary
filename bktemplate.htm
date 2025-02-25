@@ -1,5 +1,5 @@
 <html><head><title>Book Diary</title>
-    <!-- 25/02/19 v1.38 サマリに今月冊数順位追加  -->
+    <!-- 25/02/25 v1.40 旧サマリ廃止  -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Content-Style-Type" content="text/css">
     <link rel="stylesheet" href="bookdr.css">
@@ -122,19 +122,8 @@
     <span style="font-size:12px;">実行日時   : %today%</span>
     <span style="font-size:12px;">最終データ : %lastdate%</span>
     
-    <h2>サマリー</h2>
-    <table class="summary">
-        %summary%
-    </table>
-
-    <table class="summary">
-        %month_order%
-    </table>
-    <table class="summary">
-        %year_order%
-    </table>
     <br>
-    <h2>Newサマリー</h2>
+    <h2>サマリー</h2>
     <table>
         <tr>
             <th></th><th colspan="3">冊数</th><th colspan="4">ページ</th>
@@ -144,7 +133,7 @@
             <th></th><th>冊数</th><th>順位</th><th>月平均</th><th>ページ</th><th>順位</th>
             <th>日平均</th><th>日平均順位</th><th>価格</th><th>順位</th><th>月平均</th><th>平均順位</th>
         </tr>
-        %summary2%
+        %summary%
     </table>
 
 
