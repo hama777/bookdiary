@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 25/02/20 v1.39 サマリに今年冊数順位追加
-version = "1.39"
+# 25/02/25 v1.40 旧サマリ廃止
+version = "1.40"
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -493,49 +493,49 @@ def today(s):
     s = s.replace("%today%",d)
     out.write(s)
 
-def summary():
-    num_all = len(df)
-    page_all = df['page'].sum()
-    dfyy = df[df['date'].dt.year == end_year]
-    num_year  = len(dfyy)
-    page_year = dfyy['page'].sum()
-    dfmm = dfyy[dfyy['date'].dt.month == today_mm]
-    num_month  = len(dfmm)
-    page_month = dfmm['page'].sum()
-    start_date = date(today_yy, 1, 1)
-    days_year = (today_date - start_date).days
-    start_date = date(today_yy, today_mm, 1)
-    days_month = (today_date - start_date).days + 1
-    start_date = date(1990, 4, 1)
-    days_all = (today_date - start_date).days
-    span_blue = '<span style="color:#0763f7;">'
-    span_end = '</span></td><td class="summary">'
+# def summary():
+#     num_all = len(df)
+#     page_all = df['page'].sum()
+#     dfyy = df[df['date'].dt.year == end_year]
+#     num_year  = len(dfyy)
+#     page_year = dfyy['page'].sum()
+#     dfmm = dfyy[dfyy['date'].dt.month == today_mm]
+#     num_month  = len(dfmm)
+#     page_month = dfmm['page'].sum()
+#     start_date = date(today_yy, 1, 1)
+#     days_year = (today_date - start_date).days
+#     start_date = date(today_yy, today_mm, 1)
+#     days_month = (today_date - start_date).days + 1
+#     start_date = date(1990, 4, 1)
+#     days_all = (today_date - start_date).days
+#     span_blue = '<span style="color:#0763f7;">'
+#     span_end = '</span></td><td class="summary">'
 
-    out.write(f'<tr><td class="summary">{info_icon}</td>'
-              f'<td class="summary">{span_blue}累積:{span_end}{num_all:>4} 冊</td>'
-              f'<td class="summary">{span_blue}月平均:{span_end}{num_all/days_all*30:.2f} 冊</td>'
-              f'<td class="summary">{book_icon}</td>'
-              f'<td class="summary">{span_blue}ページ:{span_end}{page_all:.0f} </td>'
-              f'<td class="summary">{span_blue}月平均:{span_end}{page_all/days_all*30:.2f}</td>'
-              f'<td class="summary">{span_blue}日平均:{span_end}{page_all/days_all:.2f}</td></tr>')
-    out.write(f'<tr><td class="summary">{info_icon}</td>'
-              f'<td class="summary">{span_blue}今年:{span_end}{num_year:>4} 冊</td>'
-              f'<td class="summary">{span_blue} 月平均:{span_end}{num_year/days_year*30:.2f} 冊</td>'
-              f'<td class="summary">{book_icon}</td>'
-              f'<td class="summary">{span_blue}ページ:{span_end}{page_year:.0f} </td>'
-              f'<td class="summary">{span_blue}月平均:{span_end}{page_year/days_year*30:.2f}</td>'
-              f'<td class="summary">{span_blue}日平均:{span_end}{page_year/days_year:.2f}</td></tr>')
-    out.write(f'<tr><td class="summary">{info_icon}</td>'
-              f'<td class="summary">{span_blue}今月:{span_end}{num_month:>4} 冊</td>'
-              f'<td class="summary">{span_blue} 月平均:{span_end}{num_month/days_month*30:.2f} 冊</td>'
-              f'<td class="summary">{book_icon}</td>'
-              f'<td class="summary">{span_blue}ページ:{span_end}{page_month:.0f} </td>'
-              f'<td class="summary">{span_blue}月平均:{span_end}{page_month/days_month*30:.2f}</td>'
-              f'<td class="summary">{span_blue}日平均:{span_end}{page_month/days_month:.2f}</td></tr>')
+#     out.write(f'<tr><td class="summary">{info_icon}</td>'
+#               f'<td class="summary">{span_blue}累積:{span_end}{num_all:>4} 冊</td>'
+#               f'<td class="summary">{span_blue}月平均:{span_end}{num_all/days_all*30:.2f} 冊</td>'
+#               f'<td class="summary">{book_icon}</td>'
+#               f'<td class="summary">{span_blue}ページ:{span_end}{page_all:.0f} </td>'
+#               f'<td class="summary">{span_blue}月平均:{span_end}{page_all/days_all*30:.2f}</td>'
+#               f'<td class="summary">{span_blue}日平均:{span_end}{page_all/days_all:.2f}</td></tr>')
+#     out.write(f'<tr><td class="summary">{info_icon}</td>'
+#               f'<td class="summary">{span_blue}今年:{span_end}{num_year:>4} 冊</td>'
+#               f'<td class="summary">{span_blue} 月平均:{span_end}{num_year/days_year*30:.2f} 冊</td>'
+#               f'<td class="summary">{book_icon}</td>'
+#               f'<td class="summary">{span_blue}ページ:{span_end}{page_year:.0f} </td>'
+#               f'<td class="summary">{span_blue}月平均:{span_end}{page_year/days_year*30:.2f}</td>'
+#               f'<td class="summary">{span_blue}日平均:{span_end}{page_year/days_year:.2f}</td></tr>')
+#     out.write(f'<tr><td class="summary">{info_icon}</td>'
+#               f'<td class="summary">{span_blue}今月:{span_end}{num_month:>4} 冊</td>'
+#               f'<td class="summary">{span_blue} 月平均:{span_end}{num_month/days_month*30:.2f} 冊</td>'
+#               f'<td class="summary">{book_icon}</td>'
+#               f'<td class="summary">{span_blue}ページ:{span_end}{page_month:.0f} </td>'
+#               f'<td class="summary">{span_blue}月平均:{span_end}{page_month/days_month*30:.2f}</td>'
+#               f'<td class="summary">{span_blue}日平均:{span_end}{page_month/days_month:.2f}</td></tr>')
 
-    out.write('</tr>')
+#     out.write('</tr>')
 
-def summary_new() :
+def summary() :
     num_all = len(df)              # 全冊数
     page_all = df['page'].sum()
     price_all = df['price'].sum()
@@ -595,37 +595,37 @@ def summary_new() :
     out.write('</tr>\n')
 
 
-def month_order() :
-    span_blue = '<span style="color:#0763f7;">'
-    span_end = '</span></td><td class="summary">'
-    page_order,count,cur_page = cur_month_page_rank()
-    price_order,count,cur_price = cur_month_price_rank()
-    out.write(f'<tr><td class="summary">{info_icon}{span_blue}今月 ページ数順位{span_end}</td>'
-              f'<td class="summary">{cur_page} </td>'
-              f'<td class="summary">{page_order}/{count} </td>'
-              f'<td class="summary">{yen_icon}{span_blue} 価格順位{span_end}</td>'
-              f'<td class="summary">{cur_price} </td>'
-              f'<td class="summary">{price_order}/{count} </td>'
-              f'</tr>')
+# def month_order() :
+#     span_blue = '<span style="color:#0763f7;">'
+#     span_end = '</span></td><td class="summary">'
+#     page_order,count,cur_page = cur_month_page_rank()
+#     price_order,count,cur_price = cur_month_price_rank()
+#     out.write(f'<tr><td class="summary">{info_icon}{span_blue}今月 ページ数順位{span_end}</td>'
+#               f'<td class="summary">{cur_page} </td>'
+#               f'<td class="summary">{page_order}/{count} </td>'
+#               f'<td class="summary">{yen_icon}{span_blue} 価格順位{span_end}</td>'
+#               f'<td class="summary">{cur_price} </td>'
+#               f'<td class="summary">{price_order}/{count} </td>'
+#               f'</tr>')
 
-def year_order() :
-    span_blue = '<span style="color:#0763f7;">'
-    span_end = '</span></td><td class="summary">'
-    ave_page_order,count,ave_page = cur_year_ave_page_rank()
-    page_order,count,page = cur_year_page_rank()
-    price_order,count,acc_price = cur_year_price_rank()
-    out.write(f'<tr><td class="summary">{info_icon}{span_blue}今年 1日ページ数{span_end}</td>'
-              f'<td class="summary">{ave_page:.1f} </td>'
-              f'<td class="summary">{span_blue}順位{span_end} </td>'
-              f'<td class="summary">{ave_page_order}/{count} </td>'
-              f'<td class="summary">{span_blue}累積ページ数{span_end} </td>'
-              f'<td class="summary">{page} </td>'
-              f'<td class="summary">順位 {page_order}/{count} </td>'
-              f'<td class="summary">{yen_icon}{span_blue}累積価格{span_end} </td>'
-              f'<td class="summary">{acc_price} </td>'
-              f'<td class="summary">{span_blue}  順位{span_end}</td>'
-              f'<td class="summary">{price_order}/{count}  </td>'
-              f'</tr>')
+# def year_order() :
+#     span_blue = '<span style="color:#0763f7;">'
+#     span_end = '</span></td><td class="summary">'
+#     ave_page_order,count,ave_page = cur_year_ave_page_rank()
+#     page_order,count,page = cur_year_page_rank()
+#     price_order,count,acc_price = cur_year_price_rank()
+#     out.write(f'<tr><td class="summary">{info_icon}{span_blue}今年 1日ページ数{span_end}</td>'
+#               f'<td class="summary">{ave_page:.1f} </td>'
+#               f'<td class="summary">{span_blue}順位{span_end} </td>'
+#               f'<td class="summary">{ave_page_order}/{count} </td>'
+#               f'<td class="summary">{span_blue}累積ページ数{span_end} </td>'
+#               f'<td class="summary">{page} </td>'
+#               f'<td class="summary">順位 {page_order}/{count} </td>'
+#               f'<td class="summary">{yen_icon}{span_blue}累積価格{span_end} </td>'
+#               f'<td class="summary">{acc_price} </td>'
+#               f'<td class="summary">{span_blue}  順位{span_end}</td>'
+#               f'<td class="summary">{price_order}/{count}  </td>'
+#               f'</tr>')
 
 def post_pixela() :
     post_days = 14      #  最近の何日をpostするか
@@ -723,15 +723,12 @@ def parse_template() :
         if "%summary%" in line :
             summary()
             continue
-        if "%summary2%" in line :
-            summary_new()
-            continue
-        if "%month_order%" in line :
-            month_order()
-            continue
-        if "%year_order%" in line :
-            year_order()
-            continue
+        # if "%month_order%" in line :
+        #     month_order()
+        #     continue
+        # if "%year_order%" in line :
+        #     year_order()
+        #     continue
 
         out.write(line)
 
