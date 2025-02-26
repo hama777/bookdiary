@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 25/02/25 v1.40 旧サマリ廃止
-version = "1.40"
+# 25/02/26 v1.41 月平均冊数の順位追加
+version = "1.41"
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -158,6 +158,7 @@ def calc_rank_month() :
     count_list = []      #  月冊数
     page_list = []
     price_list = []
+    ave_count_list = []   #  30日平均冊数
     ave_page_list = []   #  日平均ページ数
     ave_price_list = []   #  日平均ページ数
     for yy in range(1994,end_year+1) :
@@ -174,16 +175,19 @@ def calc_rank_month() :
             price_list.append(pr)
             date_list.append(yy*100+mm)
             ave = pg / calendar.monthrange(yy, mm)[1]
-            if yy == end_year and mm == today_mm  :
+            ave_price = pr
+            ave_count = count
+            if yy == end_year and mm == today_mm  :   #  今月
                 ave = pg / today_dd
-            ave_page_list.append(ave)
-            ave_price = pr 
-            if yy == end_year and mm == today_mm  :
                 ave_price = pr / today_dd * 30
-            ave_price_list.append(ave_price)
+                ave_count = count / today_dd * 30
 
-    df_month = pd.DataFrame(list(zip(date_list,count_list,page_list,price_list,ave_page_list,ave_price_list))
-        , columns = ['date','count','page','price','ave_page','ave_price'])
+            ave_page_list.append(ave)
+            ave_price_list.append(ave_price)
+            ave_count_list.append(ave_count)
+
+    df_month = pd.DataFrame(list(zip(date_list,count_list,page_list,price_list,ave_count_list,ave_page_list,ave_price_list))
+        , columns = ['date','count','page','price','ave_count','ave_page','ave_price'])
 
 #  年ごとの  ページ、価格 のデータフレームを作成する
 def create_df_year() :
@@ -194,37 +198,49 @@ def create_df_year() :
 
     date_list = []
     count_list = []      #  年冊数
+    ave_count_list = []      #  年冊数
     page_list = []
     ave_page_list = []   #  日平均ページ数
     price_list = []
     ave_price_list = []
-    cnt_list = []
+    #cnt_list = []
     for yy in range(1994,end_year+1) :
         dfyy = df[df['date'].dt.year == yy]
         count = len(dfyy)
         count_list.append(count)
         pg = dfyy['page'].sum()
         page_list.append(pg)
-        ave = pg / 365
-        if yy == end_year :
-            ave = pg / days_year
-        ave_page_list.append(ave)
         pr = dfyy['price'].sum()
         price_list.append(pr)
+        ave_count = count / 12
+        ave = pg / 365
         ave_pr = pr / 12
         if yy == end_year :
+            ave_count = count / days_year * 30
+            ave = pg / days_year
             ave_pr = pr / days_year * 30
+        ave_page_list.append(ave)
         ave_price_list.append(ave_pr)
-        cnt = dfyy['title'].count()
-        cnt_list.append(cnt)
+        ave_count_list.append(ave_count)
+
+        #cnt = dfyy['title'].count()
+        #cnt_list.append(cnt)
         date_list.append(yy)
             
-    df_year = pd.DataFrame(list(zip(date_list,count_list,page_list,price_list,cnt_list,ave_page_list,ave_price_list))
-        , columns = ['date','count','page','price','cnt','ave_page','ave_price'])
+    df_year = pd.DataFrame(list(zip(date_list,count_list,page_list,price_list,ave_count_list,ave_page_list,ave_price_list))
+        , columns = ['date','count','page','price','ave_count','ave_page','ave_price'])
+    print(df_year)
+
 
 # 今年の冊数順位
 def  cur_year_count_rank() :
     order = int(df_year['count'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_year)
+    return order,count
+
+# 今年の平均冊数順位
+def  cur_year_ave_count_rank() :
+    order = int(df_year['ave_count'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_year)
     return order,count
 
@@ -263,6 +279,12 @@ def  cur_year_ave_price_rank() :
 # 今月の冊数順位
 def  cur_month_count_rank() :
     order = int(df_month['count'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
+    count = len(df_month)
+    return order,count
+
+# 今月の平均冊数順位
+def  cur_month_ave_count_rank() :
+    order = int(df_month['ave_count'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_month)
     return order,count
 
@@ -562,9 +584,12 @@ def summary() :
     page_order,count,cur_page = cur_month_page_rank()
     price_order,count,cur_price = cur_month_price_rank()
     ave_price_order,count,cur_price = cur_month_ave_price_rank()
+    ave_count_order,count = cur_month_ave_count_rank()
         
     out.write('<tr>')
-    out.write(f'<td>今月</td><td align="right">{num_month}</td><td align="right">{count_order}/{count}</td><td align="right">{num_month/days_month*30:.2f}</td>')
+    out.write(f'<td>今月</td><td align="right">{num_month}</td><td align="right">{count_order}/{count}</td>')
+    out.write(f'<td align="right">{num_month/days_month*30:.2f}</td>')
+    out.write(f'<td align="right">{ave_count_order}/{count}</td>')
     out.write(f'<td align="right">{page_month:,.0f}</td><td align="right">{page_order}/{count}</td>')
     out.write(f'<td align="right">{page_month/days_month:.0f}</td><td align="right">{ave_page_order}/{count}</td>')
     out.write(f'<td align="right">{price_month:,.0f}</td><td align="right">{price_order}/{count}</td>')
@@ -573,13 +598,16 @@ def summary() :
     out.write('</tr>\n')
 
     count_order,count = cur_year_count_rank()
+    ave_count_order,count = cur_year_ave_count_rank()
     ave_page_order,count,ave_page = cur_year_ave_page_rank()
     page_order,count,page = cur_year_page_rank()
     price_order,count,acc_price = cur_year_price_rank()
     ave_price_order,count,acc_price = cur_year_ave_price_rank()
 
     out.write('<tr>')
-    out.write(f'<td>今年</td><td  align="right">{num_year}</td><td align="right">{count_order}/{count}</td><td  align="right">{num_year/days_year*30:.2f}</td>')
+    out.write(f'<td>今年</td><td  align="right">{num_year}</td><td align="right">{count_order}/{count}</td>')
+    out.write(f'<td align="right">{num_year/days_year*30:.2f}</td>')
+    out.write(f'<td align="right">{ave_count_order}/{count}</td>')
     out.write(f'<td align="right">{page_year:,.0f}</td><td  align="right">{page_order}/{count}</td>')
     out.write(f'<td align="right">{page_year/days_year:.0f}</td><td  align="right">{ave_page_order}/{count}</td>')
     out.write(f'<td align="right">{price_year:,.0f}</td><td  align="right">{price_order}/{count}</td>')
@@ -589,6 +617,7 @@ def summary() :
 
     out.write('<tr>')
     out.write(f'<td>総合</td><td align="right">{num_all}</td><td></td><td  align="right">{num_all/days_all*30:.2f}</td>')
+    out.write(f'<td></td>')
     out.write(f'<td  align="right">{page_all:,.0f}</td><td></td><td  align="right">{page_all/days_all:.0f}</td></td><td>')
     out.write(f'<td  align="right">{price_all:,.0f}</td><td></td><td  align="right">{price_all/days_all*30:,.0f}</td>')
     out.write(f'<td align="right"></td>')
