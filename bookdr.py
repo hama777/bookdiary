@@ -10,8 +10,10 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 25/02/26 v1.41 月平均冊数の順位追加
-version = "1.41"
+# 25/02/27 v1.42 微修正
+version = "1.42"
+
+# TODO: 順位関数の共通化
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -115,8 +117,6 @@ def rank_price_year():
     if target_mm == 13 :
         target_mm = 1 
     target_yy = end_year -1 
-
-#    dfyy = df[df['date'].dt.year == end_year]
     target_df = df[df['date'] >= datetime.datetime(target_yy,target_mm,1)]
     df_s = target_df.sort_values(by=['price'],ascending=False)
     rank_price_output(df_s,20)
@@ -189,7 +189,7 @@ def calc_rank_month() :
     df_month = pd.DataFrame(list(zip(date_list,count_list,page_list,price_list,ave_count_list,ave_page_list,ave_price_list))
         , columns = ['date','count','page','price','ave_count','ave_page','ave_price'])
 
-#  年ごとの  ページ、価格 のデータフレームを作成する
+#  年ごとの  ページ、価格 のデータフレーム df_year を作成する
 def create_df_year() :
     global df_year
     today = date.today()
@@ -203,7 +203,6 @@ def create_df_year() :
     ave_page_list = []   #  日平均ページ数
     price_list = []
     ave_price_list = []
-    #cnt_list = []
     for yy in range(1994,end_year+1) :
         dfyy = df[df['date'].dt.year == yy]
         count = len(dfyy)
@@ -222,15 +221,10 @@ def create_df_year() :
         ave_page_list.append(ave)
         ave_price_list.append(ave_pr)
         ave_count_list.append(ave_count)
-
-        #cnt = dfyy['title'].count()
-        #cnt_list.append(cnt)
         date_list.append(yy)
             
     df_year = pd.DataFrame(list(zip(date_list,count_list,page_list,price_list,ave_count_list,ave_page_list,ave_price_list))
         , columns = ['date','count','page','price','ave_count','ave_page','ave_price'])
-    print(df_year)
-
 
 # 今年の冊数順位
 def  cur_year_count_rank() :
@@ -249,7 +243,6 @@ def  cur_year_page_rank() :
     order = int(df_year['page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_year)
     page = df_year['page'].iloc[-1]
-
     return order,count,page
 
 # 今年の平均ページ順位
@@ -257,7 +250,6 @@ def  cur_year_ave_page_rank() :
     order = int(df_year['ave_page'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_year)
     ave_page = df_year['ave_page'].iloc[-1]
-
     return order,count,ave_page
 
 # 今年の価格順位
@@ -265,7 +257,6 @@ def  cur_year_price_rank() :
     order = int(df_year['price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_year)
     price = int(df_year['price'].iloc[-1])
-
     return order,count,price
 
 # 今年の月平均価格順位
@@ -273,7 +264,6 @@ def  cur_year_ave_price_rank() :
     order = int(df_year['ave_price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_year)
     price = int(df_year['ave_price'].iloc[-1])
-
     return order,count,price
 
 # 今月の冊数順位
@@ -320,7 +310,6 @@ def  cur_month_ave_price_rank() :
 def rank_page_month(flg) :
     df_page_month_sort = df_month.sort_values(by=['page'],ascending=False)
     rank_month_com(flg,df_page_month_sort,0)
-
 
 #  月別価格ランキング
 def rank_price_month(flg) :
@@ -515,48 +504,6 @@ def today(s):
     s = s.replace("%today%",d)
     out.write(s)
 
-# def summary():
-#     num_all = len(df)
-#     page_all = df['page'].sum()
-#     dfyy = df[df['date'].dt.year == end_year]
-#     num_year  = len(dfyy)
-#     page_year = dfyy['page'].sum()
-#     dfmm = dfyy[dfyy['date'].dt.month == today_mm]
-#     num_month  = len(dfmm)
-#     page_month = dfmm['page'].sum()
-#     start_date = date(today_yy, 1, 1)
-#     days_year = (today_date - start_date).days
-#     start_date = date(today_yy, today_mm, 1)
-#     days_month = (today_date - start_date).days + 1
-#     start_date = date(1990, 4, 1)
-#     days_all = (today_date - start_date).days
-#     span_blue = '<span style="color:#0763f7;">'
-#     span_end = '</span></td><td class="summary">'
-
-#     out.write(f'<tr><td class="summary">{info_icon}</td>'
-#               f'<td class="summary">{span_blue}累積:{span_end}{num_all:>4} 冊</td>'
-#               f'<td class="summary">{span_blue}月平均:{span_end}{num_all/days_all*30:.2f} 冊</td>'
-#               f'<td class="summary">{book_icon}</td>'
-#               f'<td class="summary">{span_blue}ページ:{span_end}{page_all:.0f} </td>'
-#               f'<td class="summary">{span_blue}月平均:{span_end}{page_all/days_all*30:.2f}</td>'
-#               f'<td class="summary">{span_blue}日平均:{span_end}{page_all/days_all:.2f}</td></tr>')
-#     out.write(f'<tr><td class="summary">{info_icon}</td>'
-#               f'<td class="summary">{span_blue}今年:{span_end}{num_year:>4} 冊</td>'
-#               f'<td class="summary">{span_blue} 月平均:{span_end}{num_year/days_year*30:.2f} 冊</td>'
-#               f'<td class="summary">{book_icon}</td>'
-#               f'<td class="summary">{span_blue}ページ:{span_end}{page_year:.0f} </td>'
-#               f'<td class="summary">{span_blue}月平均:{span_end}{page_year/days_year*30:.2f}</td>'
-#               f'<td class="summary">{span_blue}日平均:{span_end}{page_year/days_year:.2f}</td></tr>')
-#     out.write(f'<tr><td class="summary">{info_icon}</td>'
-#               f'<td class="summary">{span_blue}今月:{span_end}{num_month:>4} 冊</td>'
-#               f'<td class="summary">{span_blue} 月平均:{span_end}{num_month/days_month*30:.2f} 冊</td>'
-#               f'<td class="summary">{book_icon}</td>'
-#               f'<td class="summary">{span_blue}ページ:{span_end}{page_month:.0f} </td>'
-#               f'<td class="summary">{span_blue}月平均:{span_end}{page_month/days_month*30:.2f}</td>'
-#               f'<td class="summary">{span_blue}日平均:{span_end}{page_month/days_month:.2f}</td></tr>')
-
-#     out.write('</tr>')
-
 def summary() :
     num_all = len(df)              # 全冊数
     page_all = df['page'].sum()
@@ -622,39 +569,6 @@ def summary() :
     out.write(f'<td  align="right">{price_all:,.0f}</td><td></td><td  align="right">{price_all/days_all*30:,.0f}</td>')
     out.write(f'<td align="right"></td>')
     out.write('</tr>\n')
-
-
-# def month_order() :
-#     span_blue = '<span style="color:#0763f7;">'
-#     span_end = '</span></td><td class="summary">'
-#     page_order,count,cur_page = cur_month_page_rank()
-#     price_order,count,cur_price = cur_month_price_rank()
-#     out.write(f'<tr><td class="summary">{info_icon}{span_blue}今月 ページ数順位{span_end}</td>'
-#               f'<td class="summary">{cur_page} </td>'
-#               f'<td class="summary">{page_order}/{count} </td>'
-#               f'<td class="summary">{yen_icon}{span_blue} 価格順位{span_end}</td>'
-#               f'<td class="summary">{cur_price} </td>'
-#               f'<td class="summary">{price_order}/{count} </td>'
-#               f'</tr>')
-
-# def year_order() :
-#     span_blue = '<span style="color:#0763f7;">'
-#     span_end = '</span></td><td class="summary">'
-#     ave_page_order,count,ave_page = cur_year_ave_page_rank()
-#     page_order,count,page = cur_year_page_rank()
-#     price_order,count,acc_price = cur_year_price_rank()
-#     out.write(f'<tr><td class="summary">{info_icon}{span_blue}今年 1日ページ数{span_end}</td>'
-#               f'<td class="summary">{ave_page:.1f} </td>'
-#               f'<td class="summary">{span_blue}順位{span_end} </td>'
-#               f'<td class="summary">{ave_page_order}/{count} </td>'
-#               f'<td class="summary">{span_blue}累積ページ数{span_end} </td>'
-#               f'<td class="summary">{page} </td>'
-#               f'<td class="summary">順位 {page_order}/{count} </td>'
-#               f'<td class="summary">{yen_icon}{span_blue}累積価格{span_end} </td>'
-#               f'<td class="summary">{acc_price} </td>'
-#               f'<td class="summary">{span_blue}  順位{span_end}</td>'
-#               f'<td class="summary">{price_order}/{count}  </td>'
-#               f'</tr>')
 
 def post_pixela() :
     post_days = 14      #  最近の何日をpostするか
@@ -752,12 +666,6 @@ def parse_template() :
         if "%summary%" in line :
             summary()
             continue
-        # if "%month_order%" in line :
-        #     month_order()
-        #     continue
-        # if "%year_order%" in line :
-        #     year_order()
-        #     continue
 
         out.write(line)
 
