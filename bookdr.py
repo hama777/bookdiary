@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 25/02/27 v1.42 微修正
-version = "1.42"
+# 26/01/07 v1.43 ページ平均を1冊あたりから1日あたりに変更
+version = "1.43"
 
 # TODO: 順位関数の共通化
 
@@ -300,6 +300,18 @@ def  cur_month_price_rank() :
     return order,count,price
 
 # 今月の平均価格順位
+def  cur_month_ave_price_rank_new() :
+    # 1. 準備：ave_priceで降順にソートする
+    df_sorted = df_month.sort_values('ave_price', ascending=False).reset_index(drop=True)
+    print(df_sorted.head(19))
+    # 2. 指定した yymm が何行目にあるか探す
+    # ※ Pythonのインデックスは0から始まるため、順位にする場合は +1 します
+    target_yymm = 202601  # 例
+    rank = df_sorted[df_sorted['date'] == target_yymm].index[0] + 1
+    print(rank)
+    count = len(df_month)
+    return rank,count,0
+
 def  cur_month_ave_price_rank() :
     order = int(df_month['ave_price'].rank(method='min',ascending=False).iloc[-1])  # 最終行(=今月)のindexを取得
     count = len(df_month)
@@ -380,11 +392,14 @@ def accumulate() :
         acclist.append(n)
         acclist.append(lib)
         page_sum = dfmmacc['page'].sum()
-        page_mean = dfmmacc['page'].mean()
+        #page_mean = dfmmacc['page'].mean()
+        acc_days = days_from_year_start(yy,today_mm)
+        page_per_day = page_sum / acc_days
+
         price_sum = dfmmacc['price'].sum()
         price_mean = dfmmacc['price'].mean()
         acclist.append(page_sum)
-        acclist.append(page_mean)
+        acclist.append(page_per_day)
         acclist.append(price_sum)
         acclist.append(price_mean)
         accdata[yy] = acclist
@@ -430,13 +445,55 @@ def month_table() :
                 page_mean = dfmm['page'].mean()
                 price_mean = dfmm['price'].mean()
 
+            days_in_month = days_in_month_or_until_today(yy,mm)
+            page_per_day = dfmm['page'].sum() / days_in_month
             out.write(f"<tr><td>{yy}/{mm:02}</td><td align='right'>{n}</td>"
                     f"<td align='right'>{dfmm['page'].sum():5.0f}</td>"
-                    f"<td align='right'>{page_mean:5.1f}</td>"
+                    f"<td align='right'>{page_per_day:5.1f}</td>"
                     f"<td align='right'>{dfmm['price'].sum():5.0f}</td>"
                     f"<td align='right'>{price_mean:5.1f}</td>"
                     f"<td align='right'>{lib:5.0f}</td><td align='right'>{librate:3.1f}</td>"
                     f"</tr>\n")
+
+def days_in_month_or_until_today(yy: int, mm: int) -> int:
+    """
+    年(yy)と月(mm)が与えられたとき、
+    - 指定年月が今日の年月と同じ場合: 今日の日付までの日数
+    - それ以外の場合: その月の総日数
+    を返す関数
+    """
+    # 今日と同じ年月の場合
+    if yy == today_yy and mm == today_mm:
+        return today_dd
+
+    # それ以外の場合は月の日数を返す
+    return calendar.monthrange(yy, mm)[1]
+
+from datetime import date
+import calendar
+
+def days_from_year_start(yy: int, mm: int) -> int:
+    """
+    年(yy)と月(mm)が与えられたとき、
+    - 指定年が今年と同じ場合:
+        今年の1月1日から今日までの日数
+    - それ以外の場合:
+        指定年の1月1日から指定月の月末までの日数
+    を返す
+    """
+    # 指定年が今年の場合
+    if yy == today_yy:
+        start = date(yy, 1, 1)
+        return (today_date - start).days + 1  # 1月1日を1日目としてカウント
+
+    # 指定年が今年以外の場合
+    # 指定月の月末日を取得
+    last_day = calendar.monthrange(yy, mm)[1]
+    end = date(yy, mm, last_day)
+
+    start = date(yy, 1, 1)
+    return (end - start).days + 1
+
 
 def year_table() :
     global price_year_ave,librate_year_ave
