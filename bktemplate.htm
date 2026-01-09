@@ -1,5 +1,5 @@
 <html><head><title>Book Diary</title>
-    <!-- 26/01/07 v1.43 ページ平均を1冊あたりから1日あたりに変更  -->
+    <!-- 26/01/09 v1.44 年別データを2列にする  -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Content-Style-Type" content="text/css">
     <link rel="stylesheet" href="bookdr.css">
@@ -276,13 +276,28 @@
     <div id="year_graph" style="width:1200px; height:400px;  margin-top:20px ;  " ></div>
     
     <h2>年別データ</h2>
-    <table>
-        <tr>
-        <th>年</th><th>冊数</th><th>ページ数</th><th>平均</th>
-        <th>価格</th><th>平均</th><th>図書館</th><th>率</th>
-        </tr>
-        %year_table%
-    </table>
+    <div class="flex">
+        <div>
+            <table>
+                <tr>
+                <th>年</th><th>冊数</th><th>ページ数</th><th>ページ/日</th>
+                <th>価格</th><th>平均</th><th>図書館</th><th>率</th>
+                </tr>
+                %year_table%
+            </table>
+        </div>
+        <div>
+            <table>
+                <tr>
+                <th>年</th><th>冊数</th><th>ページ数</th><th>ページ/日</th>
+                <th>価格</th><th>平均</th><th>図書館</th><th>率</th>
+                </tr>
+                %year_table%
+            </table>
+        </div>
+    </div>
+
+
     <br>
 
     <h2>年別価格グラフ</h2>
