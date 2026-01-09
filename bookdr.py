@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/01/07 v1.43 ページ平均を1冊あたりから1日あたりに変更
-version = "1.43"
+# 26/01/09 v1.44 年別データを2列にする
+version = "1.44"
 
 # TODO: 順位関数の共通化
 
@@ -37,6 +37,7 @@ info_icon = '<i class="fa-solid fa-circle-info" style="color: #73e65a;"></i>'
 yen_icon = '<i class="fa-solid fa-sack-dollar" style="color: #73e65a;"></i>'
 pixela_url = ""
 pixela_token = ""
+year_table_cnt = 0 
 
 def main_proc() :
     global end_year
@@ -496,18 +497,31 @@ def days_from_year_start(yy: int, mm: int) -> int:
 
 
 def year_table() :
-    global price_year_ave,librate_year_ave
-    for yy in range(start_year,end_year+1) :
+    global price_year_ave,librate_year_ave,year_table_cnt 
+    if year_table_cnt == 0 :
+        s = start_year
+        e = 2010
+        year_table_cnt = 1
+    else :
+        s = 2010
+        e = end_year+1
+        year_table_cnt = 1
+
+    for yy in range(s,e) :
         dfyy = df[df['date'].dt.year == yy]
         n = len(dfyy)               # 冊数
         lib = dfyy['lib'].sum()     # 図書館冊数
         librate = 0 
         if n != 0 :
             librate = lib/n*100
+        if yy == today_yy : 
+            page_per_day = dfyy['page'].sum() / days_from_year_start(today_yy,today_mm)
+        else :
+            page_per_day = dfyy['page'].sum() / 365
 
         out.write(f"<tr><td>{yy}</td><td align='right'>{n}</td>"
                   f"<td align='right'>{dfyy['page'].sum():5,.0f}</td>"
-                  f"<td align='right'>{dfyy['page'].mean():5.1f}</td>"
+                  f"<td align='right'>{page_per_day:5.1f}</td>"
                   f"<td align='right'>{dfyy['price'].sum():5,.0f}</td>"
                   f"<td align='right'>{dfyy['price'].mean():5.1f}</td>"
                   f"<td align='right'>{lib:5.0f}</td><td align='right'>{librate:3.1f}</td>"
