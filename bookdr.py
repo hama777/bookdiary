@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/01/09 v1.44 年別データを2列にする
-version = "1.44"
+# 26/01/13 v1.45 ランキングのテーブル列表示処理変更
+version = "1.45"
 
 # TODO: 順位関数の共通化
 
@@ -38,6 +38,8 @@ yen_icon = '<i class="fa-solid fa-sack-dollar" style="color: #73e65a;"></i>'
 pixela_url = ""
 pixela_token = ""
 year_table_cnt = 0 
+rank_page_month_cnt = 0   # 月別ページランキング 列制御用
+rank_price_month_cnt = 0 
 
 def main_proc() :
     global end_year
@@ -320,15 +322,19 @@ def  cur_month_ave_price_rank() :
     return order,count,price
 
 #  月別ページランキングの表示
-def rank_page_month(flg) :
+def rank_page_month() :
+    global rank_page_month_cnt 
+    rank_page_month_cnt += 1 
     df_page_month_sort = df_month.sort_values(by=['page'],ascending=False)
-    rank_month_com(flg,df_page_month_sort,0)
+    rank_month_com(rank_page_month_cnt,df_page_month_sort,0)
 
 #  月別価格ランキング
-def rank_price_month(flg) :
+def rank_price_month() :
+    global rank_price_month_cnt 
+    rank_price_month_cnt += 1
     # flg 1 の時 1 .. 10 位を表示、 2 の時 11 .. 20 位を表示  3  21 - 31 位を表示
     df_price_month_sort = df_month.sort_values(by=['price'],ascending=False)
-    rank_month_com(flg,df_price_month_sort,1)
+    rank_month_com(rank_price_month_cnt,df_price_month_sort,1)
 
 def rank_month_com(flg,df,kind) :
     # kind  0 ... page   1 .. price
@@ -591,7 +597,7 @@ def summary() :
     price_month = dfmm['price'].sum()
 
     start_date = date(today_yy, 1, 1)
-    days_year = (today_date - start_date).days
+    days_year = (today_date - start_date).days  + 1
     start_date = date(today_yy, today_mm, 1)
     days_month = (today_date - start_date).days + 1
     start_date = date(1990, 4, 1)
@@ -695,24 +701,24 @@ def parse_template() :
         if "%rank_page_year%" in line :
             rank_page_year()
             continue
-        if "%rank_page_month1%" in line :
-            rank_page_month(1)
+        if "%rank_page_month%" in line :
+            rank_page_month()
             continue
-        if "%rank_page_month2%" in line :
-            rank_page_month(2)
+        # if "%rank_page_month2%" in line :
+        #     rank_page_month(2)
+        #     continue
+        # if "%rank_page_month3%" in line :
+        #     rank_page_month(3)
+        #     continue
+        if "%rank_price_month%" in line :
+            rank_price_month()
             continue
-        if "%rank_page_month3%" in line :
-            rank_page_month(3)
-            continue
-        if "%rank_price_month1%" in line :
-            rank_price_month(1)
-            continue
-        if "%rank_price_month2%" in line :
-            rank_price_month(2)
-            continue
-        if "%rank_price_month3%" in line :
-            rank_price_month(3)
-            continue
+        # if "%rank_price_month2%" in line :
+        #     rank_price_month(2)
+        #     continue
+        # if "%rank_price_month3%" in line :
+        #     rank_price_month(3)
+        #     continue
         if "%cur_month%" in line :
             out.write(f'{today_mm} 月現在')
             continue
