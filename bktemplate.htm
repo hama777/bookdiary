@@ -1,5 +1,5 @@
 <html><head><title>Book Diary</title>
-    <!-- 26/01/13 v1.45 ランキングのテーブル列表示処理変更  -->
+    <!-- 26/01/14 v1.46 ランキングを40位まで表示  -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Content-Style-Type" content="text/css">
     <link rel="stylesheet" href="bookdr.css">
@@ -242,10 +242,26 @@
                 %rank_page_month%
             </table>
         </div>
+        <div>
+            <table>
+                <tr>
+                <th>順位</th><th>年月</th><th>ページ数</th>
+                </tr>
+                %rank_page_month%
+            </table>
+        </div>
     </div>
     <br>
     <h2>月別価格ランキング</h2>
     <div class="flex">
+        <div>
+            <table>
+                <tr>
+                <th>順位</th><th>年月</th><th>価格</th>
+                </tr>
+                %rank_price_month%
+            </table>
+        </div>
         <div>
             <table>
                 <tr>
