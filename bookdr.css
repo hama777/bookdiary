@@ -1,4 +1,4 @@
-/*  25/02/15 v1.37 Newサマリ追加  */
+/*  26/01/14 v1.46 青字追加  */
 table,td, th   { 
     font-family: "Meiryo UI" ; 
     font-size: 14px; 
@@ -54,4 +54,7 @@ td.right{
 }
 span.red {
     color : red;
+}
+span.blue {
+    color : blue;
 }
