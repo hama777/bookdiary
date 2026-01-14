@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/01/13 v1.45 ランキングのテーブル列表示処理変更
-version = "1.45"
+# 26/01/14 v1.46 ランキングを40位まで表示
+version = "1.46"
 
 # TODO: 順位関数の共通化
 
@@ -350,21 +350,28 @@ def rank_month_com(flg,df,kind) :
                 continue
             if i > 20 :
                 break
-        else :
+        elif flg == 3 :
             if i <= 20 :
+                continue
+            if i > 30 :
+                break
+        else :
+            if i <= 30 :
                 continue
 
         yymm = int(row.date) 
         yy = int(yymm / 100 )
         mm = yymm % 100
         str_yymm = f'{yy}/{mm:02}'
+        if yy == today_yy or yy == (today_yy - 1 ) :  # 今年、昨年は青字
+            str_yymm = f'<span class=blue>{str_yymm}</span>'
         if yymm  == today_yymm :     #  今月は赤字
             str_yymm = f'<span class=red>{str_yymm}</span>'
         if kind == 0 :
             out.write(f'<tr><td align="right">{i}</td><td>{str_yymm}</td><td align="right">{int(row.page):,}</td></tr>')
         else :
             out.write(f'<tr><td align="right">{i}</td><td>{str_yymm}</td><td align="right">{int(row.price):,}</td></tr>')
-        if i == 30 : 
+        if i == 40 : 
             break
 
 def rank_page_output(target_df,n) :
