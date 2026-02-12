@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/01/14 v1.46 ランキングを40位まで表示
-version = "1.46"
+# 26/02/12 v1.47 データをexcelファイルから読み込む処理追加
+version = "1.47"
 
 # TODO: 順位関数の共通化
 
@@ -47,6 +47,7 @@ def main_proc() :
     end_year = today_yy  # 集計する最終年
 
     read_config()
+    #read_data()
     read_database()
     accumulate()
     calc_rank_month()
@@ -107,6 +108,14 @@ def read_database():
 
     df = pd.DataFrame(list(zip(date_list,price_list,page_list,lib_list,title_list))
         , columns = ['date','price','page','lib','title'])
+
+def read_data() :
+    global df
+    df = pd.read_excel("reading.xls",sheet_name ='main',usecols=[0, 7],header = 1, 
+                       names=["date", "title","author","publisher","pdate","lib","page","price"])  # 0,1 カラムのみ読み込み
+    df = df.dropna()
+    df['date'] = pd.to_datetime(df['date'])
+    print(type(df))
 
 #   価格ランキング
 def rank_price():
