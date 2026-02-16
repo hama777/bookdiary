@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/02/12 v1.47 データをexcelファイルから読み込む処理追加
-version = "1.47"
+# 26/02/16 v1.48 データをexcelファイルから読み込む
+version = "1.48"
 
 # TODO: 順位関数の共通化
 
@@ -47,8 +47,8 @@ def main_proc() :
     end_year = today_yy  # 集計する最終年
 
     read_config()
-    #read_data()
-    read_database()
+    read_data()
+    #read_database()
     accumulate()
     calc_rank_month()
     create_df_year()
@@ -111,11 +111,13 @@ def read_database():
 
 def read_data() :
     global df
-    df = pd.read_excel("reading.xls",sheet_name ='main',usecols=[0, 7],header = 1, 
-                       names=["date", "title","author","publisher","pdate","lib","page","price"])  # 0,1 カラムのみ読み込み
+    df = pd.read_excel("reading.xls",sheet_name ='main',header = 1, usecols="A:H",
+                       names=["date", "title","author","publisher","pdate","own","page","price",])  # 0,1 カラムのみ読み込み
     df = df.dropna()
+
     df['date'] = pd.to_datetime(df['date'])
-    print(type(df))
+    df["lib"] = (df["own"] == "L").astype(int)
+
 
 #   価格ランキング
 def rank_price():
@@ -315,12 +317,10 @@ def  cur_month_price_rank() :
 def  cur_month_ave_price_rank_new() :
     # 1. 準備：ave_priceで降順にソートする
     df_sorted = df_month.sort_values('ave_price', ascending=False).reset_index(drop=True)
-    print(df_sorted.head(19))
     # 2. 指定した yymm が何行目にあるか探す
     # ※ Pythonのインデックスは0から始まるため、順位にする場合は +1 します
     target_yymm = 202601  # 例
     rank = df_sorted[df_sorted['date'] == target_yymm].index[0] + 1
-    print(rank)
     count = len(df_month)
     return rank,count,0
 
