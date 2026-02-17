@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/02/16 v1.48 データをexcelファイルから読み込む
-version = "1.48"
+# 26/02/17 v2.00 データをexcelファイルから読み込む
+version = "2.00"
 
 # TODO: 順位関数の共通化
 
@@ -109,15 +109,15 @@ def read_database():
     df = pd.DataFrame(list(zip(date_list,price_list,page_list,lib_list,title_list))
         , columns = ['date','price','page','lib','title'])
 
+#   Excel からデータ取得
 def read_data() :
-    global df
-    df = pd.read_excel("reading.xls",sheet_name ='main',header = 1, usecols="A:H",
-                       names=["date", "title","author","publisher","pdate","own","page","price",])  # 0,1 カラムのみ読み込み
-    df = df.dropna()
+    global df,lastdate
+    df = pd.read_excel(dbfile,sheet_name ='main',header = 0, usecols="A:H",   # header = 0  excel 1行目がタイトル
+                       names=["date", "title","author","publisher","pdate","own","page","price",]) 
 
     df['date'] = pd.to_datetime(df['date'])
     df["lib"] = (df["own"] == "L").astype(int)
-
+    lastdate = df['date'].iloc[-1].strftime('%y/%m/%d')
 
 #   価格ランキング
 def rank_price():
@@ -492,8 +492,8 @@ def days_in_month_or_until_today(yy: int, mm: int) -> int:
     # それ以外の場合は月の日数を返す
     return calendar.monthrange(yy, mm)[1]
 
-from datetime import date
-import calendar
+# from datetime import date
+# import calendar
 
 def days_from_year_start(yy: int, mm: int) -> int:
     """
@@ -513,10 +513,8 @@ def days_from_year_start(yy: int, mm: int) -> int:
     # 指定月の月末日を取得
     last_day = calendar.monthrange(yy, mm)[1]
     end = date(yy, mm, last_day)
-
     start = date(yy, 1, 1)
     return (end - start).days + 1
-
 
 def year_table() :
     global price_year_ave,librate_year_ave,year_table_cnt 
@@ -582,15 +580,13 @@ def year_librate_graph():
         out.write(f"['{yy2:02}',{librate_year_ave[yy]}],") 
 
 def date_settings():
-    global  today_date,today_mm,today_dd,today_yy,lastdate,today_datetime,today_yymm
+    global  today_date,today_mm,today_dd,today_yy,today_datetime,today_yymm
     today_datetime = datetime.datetime.today()
     today_date = datetime.date.today()
     today_mm = today_date.month
     today_dd = today_date.day
     today_yy = today_date.year
     today_yymm = today_yy * 100 + today_mm  # yyyymm の形式にする
-    #print(today_yymm)
-    #lastdate = today_date - timedelta(days=1)
 
 def today(s):
     d = today_datetime.strftime("%m/%d %H:%M")
@@ -684,9 +680,6 @@ def parse_template() :
     f = open(templatefile , 'r', encoding='utf-8')
     out = open(resultfile,'w' ,  encoding='utf-8')
     for line in f :
-        # if "%lastdate%" in line :
-        #     curdate(line)
-        #     continue
         if "%month_table%" in line :
             month_table()
             continue
@@ -720,21 +713,9 @@ def parse_template() :
         if "%rank_page_month%" in line :
             rank_page_month()
             continue
-        # if "%rank_page_month2%" in line :
-        #     rank_page_month(2)
-        #     continue
-        # if "%rank_page_month3%" in line :
-        #     rank_page_month(3)
-        #     continue
         if "%rank_price_month%" in line :
             rank_price_month()
             continue
-        # if "%rank_price_month2%" in line :
-        #     rank_price_month(2)
-        #     continue
-        # if "%rank_price_month3%" in line :
-        #     rank_price_month(3)
-        #     continue
         if "%cur_month%" in line :
             out.write(f'{today_mm} 月現在')
             continue
@@ -747,7 +728,6 @@ def parse_template() :
         if "%year_librate_graph%" in line :
             year_librate_graph()
             continue
-
         if "%version%" in line :
             s = line.replace("%version%",version)
             out.write(s)
