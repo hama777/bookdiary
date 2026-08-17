@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/02/17 v2.00 データをexcelファイルから読み込む
-version = "2.00"
+# 26/08/17 v2.01 著者ランキング追加
+version = "2.01"
 
 # TODO: 順位関数の共通化
 
@@ -118,6 +118,21 @@ def read_data() :
     df['date'] = pd.to_datetime(df['date'])
     df["lib"] = (df["own"] == "L").astype(int)
     lastdate = df['date'].iloc[-1].strftime('%y/%m/%d')
+
+def rank_author() :
+# 著者名ごとにグループ化して件数を集計
+
+    df_author = (
+        df.groupby('author', as_index=False)
+        .agg(cnt=('author', 'count'))
+        .sort_values(by='cnt', ascending=False)
+        .reset_index(drop=True)
+    )
+    n = 0 
+    for _,row in df_author.head(20).iterrows() :
+        n += 1
+        out.write(f'<tr><td>{n}</td><td>{row["author"]}</td><td>{row["cnt"]}</td></tr>\n')
+
 
 #   価格ランキング
 def rank_price():
@@ -727,6 +742,9 @@ def parse_template() :
             continue
         if "%year_librate_graph%" in line :
             year_librate_graph()
+            continue
+        if "%rank_author%" in line :
+            rank_author()
             continue
         if "%version%" in line :
             s = line.replace("%version%",version)
