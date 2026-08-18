@@ -1,5 +1,5 @@
 <html><head><title>Book Diary</title>
-    <!-- 26/08/17 v2.01 著者ランキング追加  -->
+    <!-- 26/08/18 v2.02 著者ランキングを2列表示にする  -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Content-Style-Type" content="text/css">
     <link rel="stylesheet" href="bookdr.css">
@@ -323,10 +323,21 @@
     <div id="year_librate_graph" style="width:1200px; height:400px;  margin-top:20px ; " ></div>
     <br>
     <h2>著者ランキング</h2>
+    <div class="flex">
+        <div>
             <table>
                 <tr><th>順位</th><th>著者</th><th>冊数</th></tr>
                 %rank_author%
             </table>
+        </div>
+        <div>
+            <table>
+                <tr><th>順位</th><th>著者</th><th>冊数</th></tr>
+                %rank_author%
+            </table>
+        </div>
+    </div>
+
     <br>
 
     <h2>状況</h2>
