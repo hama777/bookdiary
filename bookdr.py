@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/08/17 v2.01 著者ランキング追加
-version = "2.01"
+# 26/08/18 v2.02 著者ランキングを2列表示にする
+version = "2.02"
 
 # TODO: 順位関数の共通化
 
@@ -40,6 +40,7 @@ pixela_token = ""
 year_table_cnt = 0 
 rank_page_month_cnt = 0   # 月別ページランキング 列制御用
 rank_price_month_cnt = 0 
+rank_author_col = 0    #  著者ランキング  列制御
 
 def main_proc() :
     global end_year
@@ -52,6 +53,7 @@ def main_proc() :
     accumulate()
     calc_rank_month()
     create_df_year()
+    create_author_dataframe()
     parse_template()
     if debug == 1 :
         return
@@ -119,20 +121,29 @@ def read_data() :
     df["lib"] = (df["own"] == "L").astype(int)
     lastdate = df['date'].iloc[-1].strftime('%y/%m/%d')
 
-def rank_author() :
 # 著者名ごとにグループ化して件数を集計
-
+def create_author_dataframe() :
+    global df_author
     df_author = (
         df.groupby('author', as_index=False)
         .agg(cnt=('author', 'count'))
         .sort_values(by='cnt', ascending=False)
         .reset_index(drop=True)
     )
-    n = 0 
-    for _,row in df_author.head(20).iterrows() :
-        n += 1
-        out.write(f'<tr><td>{n}</td><td>{row["author"]}</td><td>{row["cnt"]}</td></tr>\n')
 
+def rank_author() :
+    global rank_author_col
+    rank_author_col += 1
+    n = 0 
+    for _,row in df_author.head(40).iterrows() :
+        n += 1
+        if rank_author_col == 1 :
+            if n >= 21 :
+                return
+        else :
+            if n <= 20 :
+                continue 
+        out.write(f'<tr><td>{n}</td><td>{row["author"]}</td><td>{row["cnt"]}</td></tr>\n')
 
 #   価格ランキング
 def rank_price():
