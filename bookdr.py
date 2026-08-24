@@ -10,8 +10,8 @@ import calendar
 from ftplib import FTP_TLS
 from datetime import date,timedelta
 
-# 26/08/18 v2.02 著者ランキングを2列表示にする
-version = "2.02"
+# 26/08/20 v2.03 最近5年間の著者ランキング追加
+version = "2.03"
 
 # TODO: 順位関数の共通化
 
@@ -123,9 +123,16 @@ def read_data() :
 
 # 著者名ごとにグループ化して件数を集計
 def create_author_dataframe() :
-    global df_author
+    global df_author,df_author_latest
     df_author = (
         df.groupby('author', as_index=False)
+        .agg(cnt=('author', 'count'))
+        .sort_values(by='cnt', ascending=False)
+        .reset_index(drop=True)
+    )
+    df_author_latest = (
+        df[df['date'] >= '2021-01-01']
+        .groupby('author', as_index=False)
         .agg(cnt=('author', 'count'))
         .sort_values(by='cnt', ascending=False)
         .reset_index(drop=True)
@@ -143,7 +150,13 @@ def rank_author() :
         else :
             if n <= 20 :
                 continue 
-        out.write(f'<tr><td>{n}</td><td>{row["author"]}</td><td>{row["cnt"]}</td></tr>\n')
+        out.write(f'<tr><td>{n}</td><td>{row["author"]}</td><td align="right">{row["cnt"]}</td></tr>\n')
+
+def rank_author_latest() :
+    n = 0 
+    for _,row in df_author_latest.head(20).iterrows() :
+        n += 1
+        out.write(f'<tr><td>{n}</td><td>{row["author"]}</td><td align="right">{row["cnt"]}</td></tr>\n')
 
 #   価格ランキング
 def rank_price():
@@ -756,6 +769,9 @@ def parse_template() :
             continue
         if "%rank_author%" in line :
             rank_author()
+            continue
+        if "%rank_author_latest%" in line :
+            rank_author_latest()
             continue
         if "%version%" in line :
             s = line.replace("%version%",version)
